@@ -91,7 +91,7 @@ function S3Browser({ credentials, onDisconnect }: S3BrowserProps) {
   }
 
   const handleDelete = async (key: string) => {
-    if (!confirm(`Are you sure you want to delete ${key}?`)) {
+    if (!window.confirm(`Are you sure you want to delete ${key}?`)) {
       return
     }
 
@@ -116,17 +116,19 @@ function S3Browser({ credentials, onDisconnect }: S3BrowserProps) {
       })
       const response = await s3Client.send(command)
       
-      if (response.Body) {
-        const blob = await response.Body.transformToByteArray()
-        const url = URL.createObjectURL(new Blob([blob]))
-        const a = document.createElement('a')
-        a.href = url
-        a.download = key.split('/').pop() || 'download'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+      if (!response.Body) {
+        throw new Error('No response body received from S3')
       }
+
+      const blob = await response.Body.transformToByteArray()
+      const url = URL.createObjectURL(new Blob([blob]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = key.split('/').pop() || 'download'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to download object')
       console.error('Error downloading object:', err)

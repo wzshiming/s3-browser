@@ -69,7 +69,7 @@ function S3Config({ onConnect }: S3ConfigProps) {
               id="secretAccessKey"
               value={secretAccessKey}
               onChange={(e) => setSecretAccessKey(e.target.value)}
-              placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+              placeholder="Your AWS Secret Access Key"
               required
             />
           </div>
