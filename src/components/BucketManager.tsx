@@ -78,7 +78,7 @@ function BucketManager({ credentials, s3Client, onSelectBucket, onDisconnect }: 
   }
 
   const handleDeleteBucket = async (bucketName: string) => {
-    if (!window.confirm(`Are you sure you want to delete bucket "${bucketName}"? This action cannot be undone.`)) {
+    if (!window.confirm(`Are you sure you want to delete bucket "${bucketName}"? The bucket must be completely empty (no objects, versions, or delete markers). This action cannot be undone.`)) {
       return
     }
 
@@ -90,7 +90,7 @@ function BucketManager({ credentials, s3Client, onSelectBucket, onDisconnect }: 
       await s3Client.send(command)
       loadBuckets()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete bucket. Make sure the bucket is empty.')
+      setError(err instanceof Error ? err.message : 'Failed to delete bucket. Ensure the bucket is completely empty (no objects, versions, or delete markers).')
       console.error('Error deleting bucket:', err)
     }
   }
