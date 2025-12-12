@@ -12,6 +12,7 @@ import './S3Browser.css'
 interface S3BrowserProps {
   credentials: S3Credentials
   onDisconnect: () => void
+  onBackToBuckets?: () => void
 }
 
 interface S3Object {
@@ -21,20 +22,26 @@ interface S3Object {
   isFolder: boolean
 }
 
-function S3Browser({ credentials, onDisconnect }: S3BrowserProps) {
+function S3Browser({ credentials, onDisconnect, onBackToBuckets }: S3BrowserProps) {
   const [objects, setObjects] = useState<S3Object[]>([])
   const [currentPrefix, setCurrentPrefix] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadFile, setUploadFile] = useState<File | null>(null)
 
-  const s3Client = useMemo(() => new S3Client({
-    region: credentials.region,
-    credentials: {
-      accessKeyId: credentials.accessKeyId,
-      secretAccessKey: credentials.secretAccessKey,
-    },
-  }), [credentials.region, credentials.accessKeyId, credentials.secretAccessKey])
+  const s3Client = useMemo(() => {
+    const config = {
+      region: credentials.region,
+      credentials: {
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+      },
+      ...(credentials.endpoint && { endpoint: credentials.endpoint }),
+      ...(credentials.forcePathStyle && { forcePathStyle: credentials.forcePathStyle }),
+    }
+    
+    return new S3Client(config)
+  }, [credentials.region, credentials.accessKeyId, credentials.secretAccessKey, credentials.endpoint, credentials.forcePathStyle])
 
   const loadObjects = useCallback(async (prefix: string = '') => {
     setLoading(true)
@@ -180,9 +187,16 @@ function S3Browser({ credentials, onDisconnect }: S3BrowserProps) {
       <div className="browser-header">
         <div className="bucket-info">
           <h2>{credentials.bucket}</h2>
-          <button onClick={onDisconnect} className="btn-secondary">
-            Disconnect
-          </button>
+          <div className="header-buttons">
+            {onBackToBuckets && (
+              <button onClick={onBackToBuckets} className="btn-secondary">
+                ← Back to Buckets
+              </button>
+            )}
+            <button onClick={onDisconnect} className="btn-secondary">
+              Disconnect
+            </button>
+          </div>
         </div>
         <div className="breadcrumb">
           <button onClick={() => setCurrentPrefix('')} className="breadcrumb-item">

@@ -81,3 +81,32 @@
 .config-note p {
   margin: 0;
 }
+
+.label-hint {
+  display: block;
+  font-size: 12px;
+  font-weight: normal;
+  color: #888;
+  margin-top: 2px;
+}
+
+.checkbox-group {
+  margin-bottom: 20px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.checkbox-group span {
+  font-size: 14px;
+  color: #555;
+}

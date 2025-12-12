@@ -10,16 +10,18 @@ function S3Config({ onConnect }: S3ConfigProps) {
   const [region, setRegion] = useState('us-east-1')
   const [accessKeyId, setAccessKeyId] = useState('')
   const [secretAccessKey, setSecretAccessKey] = useState('')
-  const [bucket, setBucket] = useState('')
+  const [endpoint, setEndpoint] = useState('')
+  const [forcePathStyle, setForcePathStyle] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (region && accessKeyId && secretAccessKey && bucket) {
+    if (region && accessKeyId && secretAccessKey) {
       onConnect({
         region,
         accessKeyId,
         secretAccessKey,
-        bucket,
+        endpoint: endpoint || undefined,
+        forcePathStyle: endpoint ? forcePathStyle : undefined,
       })
     }
   }
@@ -27,8 +29,21 @@ function S3Config({ onConnect }: S3ConfigProps) {
   return (
     <div className="s3-config">
       <div className="config-card">
-        <h2>Connect to S3 Bucket</h2>
+        <h2>Connect to S3</h2>
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="endpoint">
+              Endpoint (Optional)
+              <span className="label-hint">Leave empty for AWS S3</span>
+            </label>
+            <input
+              type="text"
+              id="endpoint"
+              value={endpoint}
+              onChange={(e) => setEndpoint(e.target.value)}
+              placeholder="https://s3.example.com or http://localhost:9000"
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="region">Region</label>
             <input
@@ -37,17 +52,6 @@ function S3Config({ onConnect }: S3ConfigProps) {
               value={region}
               onChange={(e) => setRegion(e.target.value)}
               placeholder="us-east-1"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="bucket">Bucket Name</label>
-            <input
-              type="text"
-              id="bucket"
-              value={bucket}
-              onChange={(e) => setBucket(e.target.value)}
-              placeholder="my-bucket"
               required
             />
           </div>
@@ -73,13 +77,25 @@ function S3Config({ onConnect }: S3ConfigProps) {
               required
             />
           </div>
+          {endpoint && (
+            <div className="form-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={forcePathStyle}
+                  onChange={(e) => setForcePathStyle(e.target.checked)}
+                />
+                <span>Force Path Style (required for MinIO and some S3-compatible services)</span>
+              </label>
+            </div>
+          )}
           <button type="submit" className="btn-primary">
             Connect
           </button>
         </form>
         <div className="config-note">
           <p>
-            <strong>Note:</strong> Your credentials are stored only in memory and never sent to any server except AWS S3.
+            <strong>Note:</strong> Your credentials are stored only in memory and never sent to any server except your S3 service.
           </p>
         </div>
       </div>

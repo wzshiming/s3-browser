@@ -24,6 +24,11 @@
   color: #333;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
 .btn-secondary {
   padding: 8px 16px;
   background-color: #6c757d;
