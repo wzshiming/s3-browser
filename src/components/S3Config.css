@@ -110,3 +110,133 @@
   font-size: 14px;
   color: #555;
 }
+
+.config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.config-header h2 {
+  margin: 0;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.button-group .btn-primary {
+  flex: 1;
+}
+
+.button-group .btn-secondary {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.saved-configs-list {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 25px;
+  border: 1px solid #e0e0e0;
+}
+
+.saved-configs-list h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.saved-config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.saved-config-item:last-child {
+  margin-bottom: 0;
+}
+
+.saved-config-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.config-info {
+  flex: 1;
+}
+
+.config-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.config-details {
+  font-size: 13px;
+  color: #666;
+}
+
+.config-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  min-width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.modal-note {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #856404;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
