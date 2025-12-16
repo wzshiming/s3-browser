@@ -147,10 +147,13 @@ function S3Browser({ credentials, onDisconnect, onBackToBuckets }: S3BrowserProp
 
     try {
       const key = currentPrefix + uploadFile.name
+      // Convert File to ArrayBuffer for browser compatibility
+      const arrayBuffer = await uploadFile.arrayBuffer()
       const command = new PutObjectCommand({
         Bucket: credentials.bucket,
         Key: key,
-        Body: uploadFile,
+        Body: new Uint8Array(arrayBuffer),
+        ContentType: uploadFile.type || 'application/octet-stream',
       })
       await s3Client.send(command)
       setUploadFile(null)
