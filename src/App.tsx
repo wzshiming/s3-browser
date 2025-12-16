@@ -42,8 +42,12 @@ function App() {
 
   const handleConnect = (creds: S3Credentials) => {
     setCredentials(creds)
-    // Navigate to buckets list after connecting
-    navigate('/buckets')
+    // If there's already a bucket in the URL, stay on that page
+    // Otherwise, navigate to buckets list
+    if (!bucketFromUrl) {
+      navigate('/buckets')
+    }
+    // If bucketFromUrl exists, we stay on the current URL which will show the browser
   }
 
   const handleDisconnect = () => {
