@@ -13,6 +13,7 @@ A modern web-based browser for S3-compatible storage services built with React a
 - 🗑️ Delete files from S3
 - 🧭 Breadcrumb navigation
 - 📊 View file sizes and last modified dates
+- 🔗 **Shareable URLs** - Full path information in URLs for bookmarking and sharing
 - 💻 Modern, responsive UI
 
 ## Prerequisites
@@ -100,11 +101,32 @@ Once in a bucket:
 - For production use, consider using temporary credentials or identity providers for better security
 - Never commit your credentials to version control
 
+## URL Structure
+
+The application uses a URL-based navigation system that allows bookmarking and sharing links to specific locations:
+
+- `/` - Configuration screen (connect to S3)
+- `/buckets` - Bucket management screen (list all buckets)
+- `/browse/{bucket}` - Browse root of specific bucket
+- `/browse/{bucket}/{path}` - Browse specific folder path in bucket
+
+**Examples:**
+- `http://localhost:5173/browse/my-bucket` - Browse root of "my-bucket"
+- `http://localhost:5173/browse/my-bucket/documents/` - Browse "documents" folder
+- `http://localhost:5173/browse/my-bucket/documents/2024/` - Browse nested "2024" folder
+
+**Features:**
+- ✅ Shareable URLs - Copy and share links to specific folders
+- ✅ Bookmarkable - Save links to frequently accessed locations
+- ✅ Browser navigation - Use back/forward buttons to navigate
+- ✅ Direct access - Open links directly to specific files/folders
+
 ## Technologies Used
 
 - [React](https://react.dev/) - UI library
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Vite](https://vite.dev/) - Build tool
+- [React Router](https://reactrouter.com/) - URL-based navigation
 - [AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/) - S3 operations
 
 ## License

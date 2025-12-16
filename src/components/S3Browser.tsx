@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   S3Client, 
   ListObjectsV2Command, 
@@ -11,6 +12,7 @@ import './S3Browser.css'
 
 interface S3BrowserProps {
   credentials: S3Credentials
+  initialPrefix?: string
   onDisconnect: () => void
   onBackToBuckets?: () => void
 }
@@ -22,12 +24,18 @@ interface S3Object {
   isFolder: boolean
 }
 
-function S3Browser({ credentials, onDisconnect, onBackToBuckets }: S3BrowserProps) {
+function S3Browser({ credentials, initialPrefix = '', onDisconnect, onBackToBuckets }: S3BrowserProps) {
+  const navigate = useNavigate()
   const [objects, setObjects] = useState<S3Object[]>([])
-  const [currentPrefix, setCurrentPrefix] = useState('')
+  const [currentPrefix, setCurrentPrefix] = useState(initialPrefix)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadFile, setUploadFile] = useState<File | null>(null)
+
+  // Update currentPrefix when initialPrefix changes (from URL)
+  useEffect(() => {
+    setCurrentPrefix(initialPrefix)
+  }, [initialPrefix])
 
   const s3Client = useMemo(() => {
     const config = {
@@ -85,7 +93,9 @@ function S3Browser({ credentials, onDisconnect, onBackToBuckets }: S3BrowserProp
 
   const handleNavigate = (key: string) => {
     if (key.endsWith('/')) {
-      setCurrentPrefix(key)
+      // Update URL with new path
+      const newPath = `/browse/${credentials.bucket}/${key}`
+      navigate(newPath)
     }
   }
 
@@ -93,7 +103,11 @@ function S3Browser({ credentials, onDisconnect, onBackToBuckets }: S3BrowserProp
     if (currentPrefix) {
       const parts = currentPrefix.split('/').filter(p => p)
       parts.pop()
-      setCurrentPrefix(parts.length > 0 ? parts.join('/') + '/' : '')
+      const newPrefix = parts.length > 0 ? parts.join('/') + '/' : ''
+      const newPath = newPrefix 
+        ? `/browse/${credentials.bucket}/${newPrefix}`
+        : `/browse/${credentials.bucket}`
+      navigate(newPath)
     }
   }
 
@@ -202,14 +216,17 @@ function S3Browser({ credentials, onDisconnect, onBackToBuckets }: S3BrowserProp
           </div>
         </div>
         <div className="breadcrumb">
-          <button onClick={() => setCurrentPrefix('')} className="breadcrumb-item">
+          <button 
+            onClick={() => navigate(`/browse/${credentials.bucket}`)} 
+            className="breadcrumb-item"
+          >
             Root
           </button>
           {getBreadcrumbs().map((crumb, index) => (
             <span key={index}>
               <span className="breadcrumb-separator">/</span>
               <button 
-                onClick={() => setCurrentPrefix(crumb.path)} 
+                onClick={() => navigate(`/browse/${credentials.bucket}/${crumb.path}`)} 
                 className="breadcrumb-item"
               >
                 {crumb.name}

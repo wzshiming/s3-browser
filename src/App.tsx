@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { S3Client } from '@aws-sdk/client-s3'
 import './App.css'
 import S3Config from './components/S3Config'
@@ -16,7 +17,12 @@ export interface S3Credentials {
 
 function App() {
   const [credentials, setCredentials] = useState<S3Credentials | null>(null)
-  const [selectedBucket, setSelectedBucket] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const params = useParams()
+
+  // Extract bucket and path from URL
+  const bucketFromUrl = params['*']?.split('/')[0] || null
+  const pathFromUrl = params['*']?.split('/').slice(1).join('/') || ''
 
   const s3Client = useMemo(() => {
     if (!credentials) return null
@@ -36,25 +42,59 @@ function App() {
 
   const handleConnect = (creds: S3Credentials) => {
     setCredentials(creds)
-    setSelectedBucket(null)
+    // Navigate to buckets list after connecting
+    navigate('/buckets')
   }
 
   const handleDisconnect = () => {
     setCredentials(null)
-    setSelectedBucket(null)
+    navigate('/')
   }
 
   const handleSelectBucket = (bucketName: string) => {
-    setSelectedBucket(bucketName)
+    navigate(`/browse/${bucketName}`)
   }
 
   const handleBackToBuckets = () => {
-    setSelectedBucket(null)
+    navigate('/buckets')
   }
 
-  const currentCredentials = credentials && selectedBucket 
-    ? { ...credentials, bucket: selectedBucket }
+  const currentCredentials = credentials && bucketFromUrl 
+    ? { ...credentials, bucket: bucketFromUrl }
     : credentials
+
+  // Determine which component to show based on URL
+  const renderContent = () => {
+    if (!credentials) {
+      return <S3Config onConnect={handleConnect} />
+    }
+
+    if (!s3Client) {
+      return null
+    }
+
+    // If URL has a bucket, show the browser
+    if (bucketFromUrl && currentCredentials) {
+      return (
+        <S3Browser 
+          credentials={currentCredentials}
+          initialPrefix={pathFromUrl}
+          onDisconnect={handleDisconnect}
+          onBackToBuckets={handleBackToBuckets}
+        />
+      )
+    }
+
+    // Otherwise show bucket manager
+    return (
+      <BucketManager 
+        credentials={credentials}
+        s3Client={s3Client}
+        onSelectBucket={handleSelectBucket}
+        onDisconnect={handleDisconnect}
+      />
+    )
+  }
 
   return (
     <div className="app">
@@ -62,22 +102,7 @@ function App() {
         <h1>S3 Browser</h1>
       </header>
       <main className="app-main">
-        {!credentials ? (
-          <S3Config onConnect={handleConnect} />
-        ) : selectedBucket && currentCredentials ? (
-          <S3Browser 
-            credentials={currentCredentials} 
-            onDisconnect={handleDisconnect}
-            onBackToBuckets={handleBackToBuckets}
-          />
-        ) : s3Client ? (
-          <BucketManager 
-            credentials={credentials}
-            s3Client={s3Client}
-            onSelectBucket={handleSelectBucket}
-            onDisconnect={handleDisconnect}
-          />
-        ) : null}
+        {renderContent()}
       </main>
     </div>
   )
