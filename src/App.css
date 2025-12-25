@@ -1,0 +1,109 @@
+/* S3 Browser App Styles */
+
+/* Reset and base styles */
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove default margins */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Table row hover effect */
+.ant-table-tbody > tr:hover > td {
+  background: #e6f7ff !important;
+}
+
+/* Breadcrumb styling */
+.ant-breadcrumb a:hover {
+  color: #1890ff;
+}
+
+/* Card styling */
+.ant-card {
+  margin-bottom: 16px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  /* Reduce table font size on mobile */
+  .ant-table {
+    font-size: 13px;
+  }
+  
+  /* Make table cells more compact */
+  .ant-table-cell {
+    padding: 8px 8px !important;
+  }
+  
+  /* Stack action buttons on mobile */
+  .ant-space-horizontal {
+    flex-wrap: wrap;
+  }
+  
+  /* Card adjustments for mobile */
+  .ant-card-head {
+    padding: 0 12px;
+  }
+  
+  .ant-card-body {
+    padding: 12px;
+  }
+  
+  /* Button adjustments for mobile */
+  .ant-btn {
+    padding: 4px 8px;
+  }
+  
+  /* Modal adjustments for mobile */
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+    margin: 16px;
+  }
+  
+  /* Breadcrumb adjustments */
+  .ant-breadcrumb {
+    font-size: 13px;
+  }
+  
+  /* Form adjustments for mobile */
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+}
+
+/* Extra small screens (phones in portrait) */
+@media (max-width: 480px) {
+  .ant-table {
+    font-size: 12px;
+  }
+  
+  .ant-table-cell {
+    padding: 6px 4px !important;
+  }
+}
