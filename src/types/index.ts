@@ -1,6 +1,5 @@
 // S3 Endpoint configuration
 export interface S3Endpoint {
-  id: string;
   name: string;
   endpoint: string;
   region: string;

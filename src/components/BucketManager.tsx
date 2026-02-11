@@ -24,7 +24,7 @@ import NavigationBar from './NavigationBar';
 interface BucketManagerProps {
   client: S3Client | null;
   selectedBucket: string | null;
-  onSelectBucket: (bucket: string | null) => void;
+  onSelectBucket: (bucket: string) => void;
   onBackToEndpoints: () => void;
   endpointName: string;
 }
@@ -79,9 +79,6 @@ const BucketManager: React.FC<BucketManagerProps> = ({
     try {
       await deleteBucket(client, bucketName);
       message.success('Bucket deleted successfully');
-      if (selectedBucket === bucketName) {
-        onSelectBucket(null);
-      }
       fetchBuckets();
     } catch (error) {
       message.error(`Failed to delete bucket: ${error instanceof Error ? error.message : 'Unknown error'}`);

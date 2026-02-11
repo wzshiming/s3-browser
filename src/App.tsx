@@ -7,6 +7,7 @@ import ObjectManager from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
 import type { S3Endpoint } from './types';
 import { createS3Client } from './services/s3Client';
+import { loadEndpoints } from './services/storage';
 import './App.css';
 
 const { Header, Content } = Layout;
@@ -38,83 +39,57 @@ const updateHash = (endpointName: string, bucket: string, path: string) => {
   }
 };
 
-// Get initial state from hash
-const getInitialState = () => {
-  const { bucket, path } = parseHash();
-  return {
-    selectedBucket: bucket,
-    currentPath: path,
-    showObjects: !!bucket,
-  };
-};
 
 function App() {
-  const [selectedEndpoint, setSelectedEndpoint] = useState<S3Endpoint | null>(null);
-  const initialState = getInitialState();
-  const [selectedBucket, setSelectedBucket] = useState<string | null>(initialState.selectedBucket);
-  const [currentPath, setCurrentPath] = useState<string>(initialState.currentPath);
-  const [showObjects, setShowObjects] = useState(initialState.showObjects);
+  const { endpointName, bucket, path } = parseHash();
+  const [selectedEndpoint, setSelectedEndpoint] = useState<string>(endpointName);
+  const [selectedBucket, setSelectedBucket] = useState<string>(bucket);
+  const [currentPath, setCurrentPath] = useState<string>(path);
+
 
   // Create S3 client when endpoint changes using useMemo
   const s3Client = useMemo<S3Client | null>(() => {
     if (selectedEndpoint) {
-      return createS3Client(selectedEndpoint);
+      const endpoints = loadEndpoints();
+      const endpoint = endpoints.find(ep => ep.name === selectedEndpoint);
+      if (endpoint) {
+        return createS3Client(endpoint);
+      }
+      return null;
     }
     return null;
   }, [selectedEndpoint]);
 
-  // Listen for hash changes (subscription pattern)
-  useEffect(() => {
-    const handleHashChange = () => {
-      const { bucket, path } = parseHash();
-      setSelectedBucket(bucket);
-      setCurrentPath(path);
-      setShowObjects(!!bucket);
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [selectedEndpoint]);
-
-  // Update hash when endpoint/bucket/path changes
-  useEffect(() => {
-    const endpointName = selectedEndpoint?.name ?? '';
-    if (showObjects && selectedBucket) {
-      updateHash(endpointName, selectedBucket, currentPath);
-    } else if (!showObjects) {
-      updateHash(endpointName, '', '');
-    }
-  }, [selectedEndpoint, selectedBucket, currentPath, showObjects]);
-
-  const handleSelectBucket = useCallback((bucket: string | null) => {
+  const handleSelectBucket = (bucket: string) => {
     setSelectedBucket(bucket);
-    if (bucket) {
-      setCurrentPath('');
-      setShowObjects(true);
-    }
-  }, []);
-
-  const handleBackToBuckets = useCallback(() => {
-    setShowObjects(false);
-    setSelectedBucket(null);
     setCurrentPath('');
-  }, []);
+    const { endpointName } = parseHash();
+    updateHash(endpointName, bucket, '');
+  };
 
-  const handlePathChange = useCallback((path: string) => {
+  const handleBackToBuckets = () => {
+    setSelectedBucket('');
+    setCurrentPath('');
+    const { endpointName } = parseHash();
+    updateHash(endpointName, '', '');
+  };
+
+  const handlePathChange = (path: string) => {
     setCurrentPath(path);
-  }, []);
+    const { endpointName, bucket } = parseHash();
+    updateHash(endpointName, bucket, path);
+  };
 
-  const handleSelectEndpoint = useCallback((endpoint: S3Endpoint | null) => {
+  const handleSelectEndpoint = (endpoint: string) => {
     setSelectedEndpoint(endpoint);
-  }, []);
+    updateHash(endpoint, '', '');
+  };
 
   const handleBackToEndpoints = useCallback(() => {
-    setSelectedEndpoint(null);
-    setShowObjects(false);
-    setSelectedBucket(null);
+    setSelectedEndpoint('');
+    setSelectedBucket('');
     setCurrentPath('');
-    // Clear the hash immediately so EndpointManager won't auto-select
-    window.location.hash = '';
+    updateHash('', '', '');
   }, []);
 
   // Determine which layer to show
@@ -129,44 +104,45 @@ function App() {
       );
     }
 
-    if (showObjects && selectedBucket) {
-      // Check if currentPath points to a file (non-empty and doesn't end with '/')
-      if (currentPath && !currentPath.endsWith('/')) {
-        return (
-          <FileDetail
-            client={s3Client}
-            selectedBucket={selectedBucket}
-            filePath={currentPath}
-            onPathChange={handlePathChange}
-            onBackToBuckets={handleBackToBuckets}
-            onBackToEndpoints={handleBackToEndpoints}
-            endpointName={selectedEndpoint.name}
-          />
-        );
-      }
-
-      // Bucket selected: show object management (full page)
+    if (!selectedBucket) {
+      // Endpoint selected but no bucket: show bucket management (full page)
       return (
-        <ObjectManager
+        <BucketManager
           client={s3Client}
           selectedBucket={selectedBucket}
-          currentPath={currentPath}
-          onPathChange={handlePathChange}
-          onBackToBuckets={handleBackToBuckets}
+          onSelectBucket={handleSelectBucket}
           onBackToEndpoints={handleBackToEndpoints}
-          endpointName={selectedEndpoint.name}
+          endpointName={selectedEndpoint}
         />
       );
     }
 
-    // Endpoint selected but no bucket: show bucket management (full page)
+
+    // Check if currentPath points to a file (non-empty and doesn't end with '/')
+    if (currentPath && !currentPath.endsWith('/')) {
+      return (
+        <FileDetail
+          client={s3Client}
+          selectedBucket={selectedBucket}
+          filePath={currentPath}
+          onPathChange={handlePathChange}
+          onBackToBuckets={handleBackToBuckets}
+          onBackToEndpoints={handleBackToEndpoints}
+          endpointName={selectedEndpoint}
+        />
+      );
+    }
+
+    // Bucket selected: show object management (full page)
     return (
-      <BucketManager
+      <ObjectManager
         client={s3Client}
         selectedBucket={selectedBucket}
-        onSelectBucket={handleSelectBucket}
+        currentPath={currentPath}
+        onPathChange={handlePathChange}
+        onBackToBuckets={handleBackToBuckets}
         onBackToEndpoints={handleBackToEndpoints}
-        endpointName={selectedEndpoint.name}
+        endpointName={selectedEndpoint}
       />
     );
   };

@@ -21,25 +21,19 @@ import {
   addEndpoint,
   updateEndpoint,
   deleteEndpoint,
-  generateId,
 } from '../services/storage';
 import NavigationBar from './NavigationBar';
 
 interface EndpointManagerProps {
-  selectedEndpoint: S3Endpoint | null;
-  onSelectEndpoint: (endpoint: S3Endpoint | null) => void;
+  selectedEndpoint: string;
+  onSelectEndpoint: (endpoint: string) => void;
 }
 
 const EndpointManager: React.FC<EndpointManagerProps> = ({
   selectedEndpoint,
   onSelectEndpoint,
 }) => {
-  // Load endpoints from storage on initial render only
-  const [endpoints, setEndpoints] = useState<S3Endpoint[]>(() => {
-    const loaded = loadEndpoints();
-    return loaded;
-  });
-  const [modalVisible, setModalVisible] = useState(false);
+
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
   const [form] = Form.useForm();
 
@@ -47,22 +41,15 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
     setEditingEndpoint(null);
     form.resetFields();
     form.setFieldsValue({ forcePathStyle: true, region: 'us-east-1' });
-    setModalVisible(true);
   };
 
   const handleEdit = (endpoint: S3Endpoint) => {
     setEditingEndpoint(endpoint);
     form.setFieldsValue(endpoint);
-    setModalVisible(true);
   };
 
   const handleDelete = (id: string) => {
     deleteEndpoint(id);
-    const updated = loadEndpoints();
-    setEndpoints(updated);
-    if (selectedEndpoint?.id === id) {
-      onSelectEndpoint(updated.length > 0 ? updated[0] : null);
-    }
     message.success('Endpoint deleted');
   };
 
@@ -72,29 +59,25 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       if (editingEndpoint) {
         const updated = { ...editingEndpoint, ...values };
         updateEndpoint(updated);
-        if (selectedEndpoint?.id === updated.id) {
-          onSelectEndpoint(updated);
+        if (selectedEndpoint === updated.name) {
+          onSelectEndpoint(updated.name);
         }
         message.success('Endpoint updated');
       } else {
-        const newEndpoint: S3Endpoint = {
-          id: generateId(),
-          ...values,
-        };
-        addEndpoint(newEndpoint);
+
+        addEndpoint(values);
         message.success('Endpoint added');
       }
-      setEndpoints(loadEndpoints());
-      setModalVisible(false);
     } catch {
       // Validation failed
     }
   };
 
   const handleSelect = (endpoint: S3Endpoint) => {
-    onSelectEndpoint(endpoint);
+    onSelectEndpoint(endpoint.name);
   };
 
+  const endpoints = loadEndpoints();
   return (
     <Card
       title={
@@ -113,7 +96,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
             style={{
               cursor: 'pointer',
               backgroundColor:
-                selectedEndpoint?.id === endpoint.id ? '#e6f7ff' : undefined,
+                selectedEndpoint === endpoint.name ? '#e6f7ff' : undefined,
               padding: '8px 12px',
               borderRadius: 4,
             }}
@@ -132,7 +115,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
                 title="Delete this endpoint?"
                 onConfirm={(e) => {
                   e?.stopPropagation();
-                  handleDelete(endpoint.id);
+                  handleDelete(endpoint.name);
                 }}
                 onCancel={(e) => e?.stopPropagation()}
               >
@@ -155,9 +138,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
 
       <Modal
         title={editingEndpoint ? 'Edit Endpoint' : 'Add Endpoint'}
-        open={modalVisible}
         onOk={handleSubmit}
-        onCancel={() => setModalVisible(false)}
       >
         <Form form={form} layout="vertical">
           <Form.Item

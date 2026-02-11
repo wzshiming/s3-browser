@@ -48,18 +48,14 @@ export const addEndpoint = (endpoint: S3Endpoint): void => {
 
 export const updateEndpoint = (endpoint: S3Endpoint): void => {
   const endpoints = loadEndpoints();
-  const index = endpoints.findIndex(ep => ep.id === endpoint.id);
+  const index = endpoints.findIndex(ep => ep.name === endpoint.name);
   if (index >= 0) {
     endpoints[index] = endpoint;
     saveEndpoints(endpoints);
   }
 };
 
-export const deleteEndpoint = (id: string): void => {
-  const endpoints = loadEndpoints().filter(ep => ep.id !== id);
+export const deleteEndpoint = (name: string): void => {
+  const endpoints = loadEndpoints().filter(ep => ep.name !== name);
   saveEndpoints(endpoints);
-};
-
-export const generateId = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 };
