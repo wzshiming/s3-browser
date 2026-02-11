@@ -15,11 +15,11 @@ import {
   DeleteOutlined,
   FolderOutlined,
   ReloadOutlined,
-  CloudServerOutlined,
 } from '@ant-design/icons';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { BucketInfo } from '../types';
 import { listBuckets, createBucket, deleteBucket } from '../services/s3Client';
+import NavigationBar from './NavigationBar';
 
 interface BucketManagerProps {
   client: S3Client | null;
@@ -135,14 +135,10 @@ const BucketManager: React.FC<BucketManagerProps> = ({
     <>
       <Card
         title={
-          <Space>
-            <Button
-              icon={<CloudServerOutlined />}
-              onClick={onBackToEndpoints}
-              type="text"
-            />
-            {endpointName} - Buckets
-          </Space>
+          <NavigationBar
+            endpointName={endpointName}
+            onNavigateEndpoints={onBackToEndpoints}
+          />
         }
         extra={
           <Space>

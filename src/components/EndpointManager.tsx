@@ -6,7 +6,6 @@ import {
   Button,
   List,
   Card,
-  Space,
   Popconfirm,
   Switch,
   message,
@@ -15,7 +14,6 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  CloudServerOutlined,
 } from '@ant-design/icons';
 import type { S3Endpoint } from '../types';
 import {
@@ -25,6 +23,7 @@ import {
   deleteEndpoint,
   generateId,
 } from '../services/storage';
+import NavigationBar from './NavigationBar';
 
 interface EndpointManagerProps {
   selectedEndpoint: S3Endpoint | null;
@@ -99,10 +98,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
   return (
     <Card
       title={
-        <Space>
-          <CloudServerOutlined />
-          S3 Endpoints
-        </Space>
+        <NavigationBar />
       }
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
