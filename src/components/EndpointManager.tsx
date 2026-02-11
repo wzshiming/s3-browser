@@ -24,6 +24,7 @@ import {
   updateEndpoint,
   deleteEndpoint,
 } from '../services/storage';
+import type { Breakpoint } from '../utils/types';
 import NavigationBar from './NavigationBar';
 
 interface EndpointManagerProps {
@@ -105,13 +106,13 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       title: 'Endpoint URL',
       dataIndex: 'endpoint',
       key: 'endpoint',
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
+      responsive: ['md'] as Breakpoint[],
     },
     {
       title: 'Region',
       dataIndex: 'region',
       key: 'region',
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
+      responsive: ['md'] as Breakpoint[],
     },
     {
       title: 'Actions',

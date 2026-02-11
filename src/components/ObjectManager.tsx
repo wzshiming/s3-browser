@@ -27,6 +27,10 @@ import {
   deleteObjects,
   downloadObject,
 } from '../services/s3Client';
+import { formatSize } from '../utils/format';
+import { getErrorMessage } from '../utils/error';
+import { downloadBlob } from '../utils/download';
+import type { Breakpoint } from '../utils/types';
 import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
@@ -38,13 +42,6 @@ interface ObjectManagerProps {
   onBackToEndpoints: () => void;
   endpointName: string;
 }
-
-const formatSize = (bytes: number): string => {
-  if (bytes === 0) return '-';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + units[i];
-};
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
   client,
@@ -69,7 +66,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       const result = await listObjects(client, selectedBucket, currentPath);
       setObjects(result.objects);
     } catch (error) {
-      message.error(`Failed to list objects: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to list objects: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -96,7 +93,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       message.success(`Uploaded ${file.name}`);
       fetchObjects();
     } catch (error) {
-      message.error(`Failed to upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to upload: ${getErrorMessage(error)}`);
     } finally {
       setUploading(false);
       setUploadProgress(100);
@@ -126,7 +123,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       message.success(`Uploaded ${total} files`);
       fetchObjects();
     } catch (error) {
-      message.error(`Failed to upload folder: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to upload folder: ${getErrorMessage(error)}`);
     } finally {
       setUploading(false);
       // Reset the input
@@ -144,7 +141,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       setSelectedRowKeys([]);
       fetchObjects();
     } catch (error) {
-      message.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to delete: ${getErrorMessage(error)}`);
     }
   };
 
@@ -152,16 +149,9 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     if (!client || !selectedBucket) return;
     try {
       const blob = await downloadObject(client, selectedBucket, key);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = key.split('/').pop() || 'download';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, key.split('/').pop() || 'download');
     } catch (error) {
-      message.error(`Failed to download: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to download: ${getErrorMessage(error)}`);
     }
   };
 
@@ -188,7 +178,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       dataIndex: 'size',
       key: 'size',
       width: 100,
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
+      responsive: ['md'] as Breakpoint[],
       render: (size: number, record: ObjectInfo) =>
         record.isFolder ? '' : formatSize(size),
     },
@@ -197,7 +187,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       dataIndex: 'lastModified',
       key: 'lastModified',
       width: 180,
-      responsive: ['lg'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
+      responsive: ['lg'] as Breakpoint[],
       render: (date: Date, record: ObjectInfo) =>
         record.isFolder ? '' : date ? new Date(date).toLocaleString() : '-',
     },
