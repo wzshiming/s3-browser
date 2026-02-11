@@ -295,6 +295,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
               showSizeChanger: true,
             }
           }
+          scroll={{ x: 'max-content' }}
           rowSelection={{
             selectedRowKeys,
             onChange: setSelectedRowKeys,
