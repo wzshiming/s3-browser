@@ -97,12 +97,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
       const isFile = !path.endsWith('/') && index === parts.length - 1;
       const isLast = index === parts.length - 1;
 
-      if (isFile) {
-        items.push({
-          key: pathCopy,
-          title: <span>{part}</span>,
-        });
-      } else if (isLast) {
+      if (isFile || isLast) {
         items.push({
           key: pathCopy,
           title: <span>{part}</span>,
