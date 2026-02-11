@@ -12,17 +12,19 @@ import {
 import {
   DownloadOutlined,
   DeleteOutlined,
+  CopyOutlined,
 } from '@ant-design/icons';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { ObjectProperties } from '../types';
 import {
   getObjectProperties,
-  downloadObject,
   deleteObjects,
+  getPresignedUrl,
+  downloadObject,
 } from '../services/s3Client';
 import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, copyToClipboard } from '../utils/download';
 import FilePreview from './FilePreview';
 import NavigationBar from './NavigationBar';
 
@@ -75,6 +77,17 @@ const FileDetail: React.FC<FileDetailProps> = ({
       downloadBlob(blob, fileName);
     } catch (error) {
       message.error(`Failed to download: ${getErrorMessage(error)}`);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!client || !selectedBucket) return;
+    try {
+      const url = await getPresignedUrl(client, selectedBucket, filePath);
+      await copyToClipboard(url);
+      message.success('Download link copied to clipboard');
+    } catch (error) {
+      message.error(`Failed to copy link: ${getErrorMessage(error)}`);
     }
   };
 
@@ -135,6 +148,12 @@ const FileDetail: React.FC<FileDetailProps> = ({
               onClick={handleDownload}
             >
               Download
+            </Button>
+            <Button
+              icon={<CopyOutlined />}
+              onClick={handleCopyLink}
+            >
+              Copy Link
             </Button>
             <Popconfirm
               title={`Delete ${fileName}?`}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Spin, Typography, Image, Alert } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
-import { getObjectAsText, getObjectAsDataUrl } from '../services/s3Client';
+import { getObjectAsText, getPresignedUrl } from '../services/s3Client';
 
 const { Text, Paragraph } = Typography;
 
@@ -59,7 +59,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
           const result = await getObjectAsText(client, bucket, objectKey);
           setContent(result.content);
         } else if (fileType === 'image' || fileType === 'video' || fileType === 'audio' || fileType === 'pdf') {
-          const url = await getObjectAsDataUrl(client, bucket, objectKey);
+          const url = await getPresignedUrl(client, bucket, objectKey);
           setDataUrl(url);
         }
       } catch (err) {
