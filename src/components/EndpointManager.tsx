@@ -29,11 +29,13 @@ import {
 interface EndpointManagerProps {
   selectedEndpoint: S3Endpoint | null;
   onSelectEndpoint: (endpoint: S3Endpoint | null) => void;
+  initialEndpointName?: string | null;
 }
 
 const EndpointManager: React.FC<EndpointManagerProps> = ({
   selectedEndpoint,
   onSelectEndpoint,
+  initialEndpointName,
 }) => {
   // Load endpoints from storage on initial render only
   const [endpoints, setEndpoints] = useState<S3Endpoint[]>(() => {
@@ -45,13 +47,14 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
   const [form] = Form.useForm();
   const initializedRef = useRef(false);
 
-  // Auto-select first endpoint if none selected (runs once after initial render)
+  // Auto-select endpoint from hash or first endpoint if none selected (runs once after initial render)
   useEffect(() => {
     if (!initializedRef.current && endpoints.length > 0 && !selectedEndpoint) {
-      onSelectEndpoint(endpoints[0]);
+      const matchedEndpoint = endpoints.find(ep => ep.name === initialEndpointName);
+      onSelectEndpoint(matchedEndpoint ?? endpoints[0]);
     }
     initializedRef.current = true;
-  }, [endpoints, selectedEndpoint, onSelectEndpoint]);
+  }, [endpoints, selectedEndpoint, onSelectEndpoint, initialEndpointName]);
 
   const handleAdd = () => {
     setEditingEndpoint(null);
