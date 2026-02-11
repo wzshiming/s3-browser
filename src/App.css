@@ -49,6 +49,24 @@ html, body {
   background: #a1a1a1;
 }
 
+@media (prefers-color-scheme: dark) {
+  .ant-table-tbody > tr:hover > td {
+    background: #111d2c !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1f1f1f;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #777;
+  }
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   /* Reduce table font size on mobile */
