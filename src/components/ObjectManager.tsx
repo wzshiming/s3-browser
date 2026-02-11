@@ -7,7 +7,6 @@ import {
   Upload,
   Popconfirm,
   message,
-  Progress,
 } from 'antd';
 import {
   PlusOutlined,
@@ -42,6 +41,8 @@ interface ObjectManagerProps {
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
   onBackToEndpoints: () => void;
+  setUploading: (uploading: boolean) => void;
+  setUploadProgress: (progress: number) => void;
 }
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
@@ -52,12 +53,12 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   onPathChange,
   onBackToBuckets,
   onBackToEndpoints,
+  setUploading,
+  setUploadProgress,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
   const fetchObjects = useCallback(async () => {
@@ -277,13 +278,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
           directory=""
           onChange={handleUploadFolder}
         />
-        {uploading && (
-          <Progress
-            percent={uploadProgress}
-            status="active"
-            style={{ marginBottom: 16 }}
-          />
-        )}
         <Table
           dataSource={objects}
           columns={columns}
