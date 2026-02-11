@@ -5,6 +5,7 @@ import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
 import ObjectManager from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
+import UploadProgress from './components/UploadProgress';
 import { createS3Client } from './services/s3Client';
 import { loadEndpoints } from './services/storage';
 import './App.css';
@@ -49,6 +50,8 @@ function App() {
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>(endpointName);
   const [selectedBucket, setSelectedBucket] = useState<string>(bucket);
   const [currentPath, setCurrentPath] = useState<string>(path);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleHashChange = () => {
     const { endpointName, bucket, path } = parseHash();
@@ -145,6 +148,8 @@ function App() {
         onBackToBuckets={handleBackToBuckets}
         onBackToEndpoints={handleBackToEndpoints}
         endpointName={selectedEndpoint}
+        setUploading={setUploading}
+        setUploadProgress={setUploadProgress}
       />
     );
   };
@@ -159,6 +164,7 @@ function App() {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
+        <UploadProgress uploading={uploading} percent={uploadProgress} />
         {renderContent()}
       </Layout>
     </ConfigProvider>
