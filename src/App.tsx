@@ -13,33 +13,37 @@ const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-// Parse hash to get current location
-const parseHash = (): { bucket: string | null; path: string } => {
+// Parse hash to get current location and endpoint name
+const parseHash = (): { endpointName: string; bucket: string; path: string } => {
   const hash = window.location.hash.slice(1); // Remove #
-  if (!hash) return { bucket: null, path: '' };
+  if (!hash) return { endpointName: '', bucket: '', path: '' };
 
   const parts = hash.split('/');
-  const bucket = parts[0] || null;
-  const path = parts.slice(1).join('/');
 
-  return { bucket, path };
+  const endpointName = parts[0];
+  const bucket = parts.length > 1 ? parts[1] : '';
+  const path = parts.length > 2 ? parts.slice(2).join('/') : '';
+  return { endpointName: endpointName, bucket, path };
 };
 
 // Update hash based on current location
-const updateHash = (bucket: string | null, path: string) => {
-  if (!bucket) {
+const updateHash = (endpointName: string, bucket: string, path: string) => {
+  if (!endpointName) {
     window.location.hash = '';
-  } else if (path) {
-    window.location.hash = bucket + '/' + path;
+  } else if (!bucket) {
+    window.location.hash = endpointName;
+  } else if (!path) {
+    window.location.hash = endpointName + '/' + bucket;
   } else {
-    window.location.hash = bucket;
+    window.location.hash = endpointName + '/' + bucket + '/' + path;
   }
 };
 
 // Get initial state from hash
 const getInitialState = () => {
-  const { bucket, path } = parseHash();
+  const { endpointName, bucket, path } = parseHash();
   return {
+    initialEndpointName: endpointName,
     selectedBucket: bucket,
     currentPath: path,
     showObjects: !!bucket,
@@ -77,16 +81,17 @@ function App() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [selectedEndpoint]);
 
-  // Update hash when bucket/path changes
+  // Update hash when endpoint/bucket/path changes
   useEffect(() => {
+    const endpointName = selectedEndpoint?.name ?? '';
     if (showObjects && selectedBucket) {
-      updateHash(selectedBucket, currentPath);
+      updateHash(endpointName, selectedBucket, currentPath);
     } else if (!showObjects) {
-      updateHash(null, '');
+      updateHash(endpointName, '', '');
     }
-  }, [selectedBucket, currentPath, showObjects]);
+  }, [selectedEndpoint, selectedBucket, currentPath, showObjects]);
 
   const handleSelectBucket = useCallback((bucket: string | null) => {
     setSelectedBucket(bucket);
@@ -119,6 +124,7 @@ function App() {
     <EndpointManager
       selectedEndpoint={selectedEndpoint}
       onSelectEndpoint={handleSelectEndpoint}
+      initialEndpointName={initialState.initialEndpointName}
     />
   );
 
