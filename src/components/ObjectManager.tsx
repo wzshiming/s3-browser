@@ -6,21 +6,15 @@ import {
   Space,
   Breadcrumb,
   Upload,
-  Modal,
   Popconfirm,
   message,
-  Descriptions,
-  Spin,
   Progress,
-  Typography,
 } from 'antd';
 import {
   PlusOutlined,
   FolderAddOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  EyeOutlined,
-  InfoCircleOutlined,
   FolderOutlined,
   FileOutlined,
   HomeOutlined,
@@ -28,17 +22,13 @@ import {
 } from '@ant-design/icons';
 import type { RcFile } from 'antd/es/upload/interface';
 import { S3Client } from '@aws-sdk/client-s3';
-import type { ObjectInfo, ObjectProperties } from '../types';
+import type { ObjectInfo } from '../types';
 import {
   listObjects,
   uploadObject,
   deleteObjects,
   downloadObject,
-  getObjectProperties,
 } from '../services/s3Client';
-import FilePreview from './FilePreview';
-import { getFileType } from './FilePreview';
-const { Text } = Typography;
 
 interface ObjectManagerProps {
   client: S3Client | null;
@@ -65,11 +55,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [propertiesModalVisible, setPropertiesModalVisible] = useState(false);
-  const [objectProperties, setObjectProperties] = useState<ObjectProperties | null>(null);
-  const [propertiesLoading, setPropertiesLoading] = useState(false);
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewKey, setPreviewKey] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -93,9 +78,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   }, [fetchObjects]);
 
   const handleNavigate = (key: string) => {
-    if (key.endsWith('/')) {
-      onPathChange(key);
-    }
+    onPathChange(key);
   };
 
   const getBreadcrumbItems = () => {
@@ -214,25 +197,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     }
   };
 
-  const handleViewProperties = async (key: string) => {
-    if (!client || !selectedBucket) return;
-    setPropertiesLoading(true);
-    setPropertiesModalVisible(true);
-    try {
-      const props = await getObjectProperties(client, selectedBucket, key);
-      setObjectProperties(props);
-    } catch (error) {
-      message.error(`Failed to get properties: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setPropertiesLoading(false);
-    }
-  };
-
-  const handlePreview = (key: string) => {
-    setPreviewKey(key);
-    setPreviewVisible(true);
-  };
-
   const columns = [
     {
       title: 'Name',
@@ -246,11 +210,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
         return (
           <Space>
             {record.isFolder ? <FolderOutlined /> : <FileOutlined />}
-            {record.isFolder ? (
-              <a onClick={() => handleNavigate(key)}>{name}</a>
-            ) : (
-              <Text>{name}</Text>
-            )}
+            <a onClick={() => handleNavigate(key)}>{name}</a>
           </Space>
         );
       },
@@ -276,33 +236,17 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 110,
+      width: 50,
       render: (_: unknown, record: ObjectInfo) =>
 
         <Space>
           {!record.isFolder && (
-            <>
-              <Button
-                icon={<DownloadOutlined />}
-                size="small"
-                onClick={() => handleDownload(record.key)}
-                title="Download"
-              />
-              <Button
-                icon={<InfoCircleOutlined />}
-                size="small"
-                onClick={() => handleViewProperties(record.key)}
-                title="Properties"
-              />
-              {getFileType(record.key) !== 'unsupported' && (
-                <Button
-                  icon={<EyeOutlined />}
-                  size="small"
-                  onClick={() => handlePreview(record.key)}
-                  title="Preview"
-                />
-              )}
-            </>
+            <Button
+              icon={<DownloadOutlined />}
+              size="small"
+              onClick={() => handleDownload(record.key)}
+              title="Download"
+            />
           )}
         </Space>
     },
@@ -387,41 +331,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
           }}
         />
       </Card>
-
-      <Modal
-        title="Object Properties"
-        open={propertiesModalVisible}
-        onCancel={() => {
-          setPropertiesModalVisible(false);
-          setObjectProperties(null);
-        }}
-        footer={null}
-      >
-        {propertiesLoading ? (
-          <Spin />
-        ) : objectProperties ? (
-          <Descriptions column={1} bordered>
-            <Descriptions.Item label="Key">{objectProperties.key}</Descriptions.Item>
-            <Descriptions.Item label="Size">
-              {formatSize(objectProperties.size)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Last Modified">
-              {objectProperties.lastModified?.toLocaleString() || '-'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Content Type">
-              {objectProperties.contentType || '-'}
-            </Descriptions.Item>
-          </Descriptions>
-        ) : null}
-      </Modal>
-
-      <FilePreview
-        visible={previewVisible}
-        onClose={() => setPreviewVisible(false)}
-        client={client}
-        bucket={selectedBucket}
-        objectKey={previewKey}
-      />
     </>
   );
 };

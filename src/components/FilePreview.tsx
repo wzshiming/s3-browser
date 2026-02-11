@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Modal, Spin, Typography, Image, Alert } from 'antd';
+import { Spin, Typography, Image, Alert } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import { getObjectAsText, getObjectAsDataUrl } from '../services/s3Client';
 
 const { Text, Paragraph } = Typography;
 
 interface FilePreviewProps {
-  visible: boolean;
-  onClose: () => void;
   client: S3Client | null;
   bucket: string | null;
   objectKey: string;
@@ -19,7 +17,7 @@ const getFileType = (key: string): 'image' | 'text' | 'video' | 'audio' | 'pdf' 
   const videoExts = ['.mp4', '.webm', '.ogg'];
   const audioExts = ['.mp3', '.wav', '.ogg', '.flac', '.aac'];
   const pdfExts = ['.pdf'];
-  
+
   const lowerKey = key.toLowerCase();
   const hasSuffix = (exts: string[]) => exts.some(e => lowerKey.endsWith(e));
 
@@ -33,8 +31,6 @@ const getFileType = (key: string): 'image' | 'text' | 'video' | 'audio' | 'pdf' 
 };
 
 const FilePreview: React.FC<FilePreviewProps> = ({
-  visible,
-  onClose,
   client,
   bucket,
   objectKey,
@@ -43,12 +39,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({
   const [content, setContent] = useState<string>('');
   const [dataUrl, setDataUrl] = useState<string>('');
   const [error, setError] = useState<string>('');
-  
+
   const fileType = getFileType(objectKey);
   const fileName = objectKey.split('/').pop() || objectKey;
 
   React.useEffect(() => {
-    if (!visible || !client || !bucket || !objectKey) {
+    if (!client || !bucket || !objectKey) {
       return;
     }
 
@@ -74,7 +70,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
     };
 
     loadContent();
-  }, [visible, client, bucket, objectKey, fileType]);
+  }, [client, bucket, objectKey, fileType]);
 
   const renderContent = () => {
     if (loading) {
@@ -101,13 +97,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
       case 'text':
         return (
           <div
-            style={{
-              maxHeight: '70vh',
-              overflow: 'auto',
-              backgroundColor: '#f5f5f5',
-              padding: 16,
-              borderRadius: 4,
-            }}
+            style={{ overflow: 'auto' }}
           >
             <Paragraph>
               <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
@@ -137,7 +127,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({
 
       case 'pdf':
         return (
-          <div style={{ height: '70vh' }}>
+          <div style={{ overflow: 'auto' }}>
             <iframe src={dataUrl} width="100%" height="100%" title={fileName} />
           </div>
         );
@@ -146,7 +136,6 @@ const FilePreview: React.FC<FilePreviewProps> = ({
         return (
           <Alert
             type="info"
-            message="Preview not available"
             description="This file type cannot be previewed. Please download the file to view it."
           />
         );
@@ -154,17 +143,10 @@ const FilePreview: React.FC<FilePreviewProps> = ({
   };
 
   return (
-    <Modal
-      title={`Preview: ${fileName}`}
-      open={visible}
-      onCancel={onClose}
-      footer={null}
-      width={800}
-    >
+    <div>
       {renderContent()}
-    </Modal>
+    </div>
   );
 };
 
 export default FilePreview;
-export { getFileType };

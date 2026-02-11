@@ -4,6 +4,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
 import ObjectManager from './components/ObjectManager';
+import FileDetail from './components/FileDetail';
 import type { S3Endpoint } from './types';
 import { createS3Client } from './services/s3Client';
 import './App.css';
@@ -129,6 +130,19 @@ function App() {
     }
 
     if (showObjects && selectedBucket) {
+      // Check if currentPath points to a file (non-empty and doesn't end with '/')
+      if (currentPath && !currentPath.endsWith('/')) {
+        return (
+          <FileDetail
+            client={s3Client}
+            selectedBucket={selectedBucket}
+            filePath={currentPath}
+            onPathChange={handlePathChange}
+            onBackToBuckets={handleBackToBuckets}
+          />
+        );
+      }
+
       // Bucket selected: show object management (full page)
       return (
         <ObjectManager
