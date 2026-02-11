@@ -105,13 +105,11 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       title: 'Endpoint URL',
       dataIndex: 'endpoint',
       key: 'endpoint',
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
     },
     {
       title: 'Region',
       dataIndex: 'region',
       key: 'region',
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
     },
     {
       title: 'Actions',

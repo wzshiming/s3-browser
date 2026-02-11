@@ -19,6 +19,7 @@ import {
 import { S3Client } from '@aws-sdk/client-s3';
 import type { BucketInfo } from '../types';
 import { listBuckets, createBucket, deleteBucket } from '../services/s3Client';
+import { getErrorMessage } from '../utils/error';
 import NavigationBar from './NavigationBar';
 
 interface BucketManagerProps {
@@ -49,7 +50,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
       const list = await listBuckets(client);
       setBuckets(list);
     } catch (error) {
-      message.error(`Failed to list buckets: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to list buckets: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
       form.resetFields();
       fetchBuckets();
     } catch (error) {
-      message.error(`Failed to create bucket: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to create bucket: ${getErrorMessage(error)}`);
     }
   };
 
@@ -81,7 +82,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
       message.success('Bucket deleted successfully');
       fetchBuckets();
     } catch (error) {
-      message.error(`Failed to delete bucket: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to delete bucket: ${getErrorMessage(error)}`);
     }
   };
 
@@ -101,7 +102,6 @@ const BucketManager: React.FC<BucketManagerProps> = ({
       title: 'Creation Date',
       dataIndex: 'creationDate',
       key: 'creationDate',
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
       render: (date: Date) => date?.toLocaleString() || '-',
     },
     {

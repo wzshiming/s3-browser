@@ -20,6 +20,9 @@ import {
   downloadObject,
   deleteObjects,
 } from '../services/s3Client';
+import { formatSize } from '../utils/format';
+import { getErrorMessage } from '../utils/error';
+import { downloadBlob } from '../utils/download';
 import FilePreview from './FilePreview';
 import NavigationBar from './NavigationBar';
 
@@ -32,13 +35,6 @@ interface FileDetailProps {
   onBackToEndpoints: () => void;
   endpointName: string;
 }
-
-const formatSize = (bytes: number): string => {
-  if (bytes === 0) return '-';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + units[i];
-};
 
 const FileDetail: React.FC<FileDetailProps> = ({
   client,
@@ -62,7 +58,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
       const props = await getObjectProperties(client, selectedBucket, filePath);
       setProperties(props);
     } catch (error) {
-      message.error(`Failed to get properties: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to get properties: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -76,16 +72,9 @@ const FileDetail: React.FC<FileDetailProps> = ({
     if (!client || !selectedBucket) return;
     try {
       const blob = await downloadObject(client, selectedBucket, filePath);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, fileName);
     } catch (error) {
-      message.error(`Failed to download: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to download: ${getErrorMessage(error)}`);
     }
   };
 
@@ -96,7 +85,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
       message.success(`Deleted ${fileName}`);
       onPathChange(parentPath);
     } catch (error) {
-      message.error(`Failed to delete: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      message.error(`Failed to delete: ${getErrorMessage(error)}`);
     }
   };
 
