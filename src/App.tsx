@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Layout, Typography, ConfigProvider, theme, Drawer, Button, Grid } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
+import { Layout, Typography, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
@@ -9,9 +8,8 @@ import type { S3Endpoint } from './types';
 import { createS3Client } from './services/s3Client';
 import './App.css';
 
-const { Header, Content, Sider } = Layout;
+const { Header, Content } = Layout;
 const { Title } = Typography;
-const { useBreakpoint } = Grid;
 
 // Parse hash to get current location and endpoint name
 const parseHash = (): { endpointName: string; bucket: string; path: string } => {
@@ -41,9 +39,8 @@ const updateHash = (endpointName: string, bucket: string, path: string) => {
 
 // Get initial state from hash
 const getInitialState = () => {
-  const { endpointName, bucket, path } = parseHash();
+  const { bucket, path } = parseHash();
   return {
-    initialEndpointName: endpointName,
     selectedBucket: bucket,
     currentPath: path,
     showObjects: !!bucket,
@@ -56,11 +53,6 @@ function App() {
   const [selectedBucket, setSelectedBucket] = useState<string | null>(initialState.selectedBucket);
   const [currentPath, setCurrentPath] = useState<string>(initialState.currentPath);
   const [showObjects, setShowObjects] = useState(initialState.showObjects);
-  const [drawerVisible, setDrawerVisible] = useState(false);
-
-  // Use Ant Design's responsive breakpoint hook
-  const screens = useBreakpoint();
-  const isMobile = !screens.md; // md breakpoint is 768px
 
   // Create S3 client when endpoint changes using useMemo
   const s3Client = useMemo<S3Client | null>(() => {
@@ -113,20 +105,53 @@ function App() {
 
   const handleSelectEndpoint = useCallback((endpoint: S3Endpoint | null) => {
     setSelectedEndpoint(endpoint);
-    // Close drawer on mobile after selecting endpoint
-    if (isMobile) {
-      setDrawerVisible(false);
-    }
-  }, [isMobile]);
+  }, []);
 
-  // Endpoint manager component (shared between sidebar and drawer)
-  const endpointManagerContent = (
-    <EndpointManager
-      selectedEndpoint={selectedEndpoint}
-      onSelectEndpoint={handleSelectEndpoint}
-      initialEndpointName={initialState.initialEndpointName}
-    />
-  );
+  const handleBackToEndpoints = useCallback(() => {
+    setSelectedEndpoint(null);
+    setShowObjects(false);
+    setSelectedBucket(null);
+    setCurrentPath('');
+    // Clear the hash immediately so EndpointManager won't auto-select
+    window.location.hash = '';
+  }, []);
+
+  // Determine which layer to show
+  const renderContent = () => {
+    if (!selectedEndpoint) {
+      // No endpoint selected: show endpoint management (full page)
+      return (
+        <EndpointManager
+          selectedEndpoint={selectedEndpoint}
+          onSelectEndpoint={handleSelectEndpoint}
+        />
+      );
+    }
+
+    if (showObjects && selectedBucket) {
+      // Bucket selected: show object management (full page)
+      return (
+        <ObjectManager
+          client={s3Client}
+          selectedBucket={selectedBucket}
+          currentPath={currentPath}
+          onPathChange={handlePathChange}
+          onBackToBuckets={handleBackToBuckets}
+        />
+      );
+    }
+
+    // Endpoint selected but no bucket: show bucket management (full page)
+    return (
+      <BucketManager
+        client={s3Client}
+        selectedBucket={selectedBucket}
+        onSelectBucket={handleSelectBucket}
+        onBackToEndpoints={handleBackToEndpoints}
+        endpointName={selectedEndpoint.name}
+      />
+    );
+  };
 
   return (
     <ConfigProvider
@@ -142,73 +167,23 @@ function App() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
             background: '#001529',
-            padding: isMobile ? '0 12px' : '0 24px',
+            padding: '0 24px',
           }}
         >
-          <Title level={isMobile ? 4 : 3} style={{ color: '#fff', margin: 0 }}>
+          <Title level={3} style={{ color: '#fff', margin: 0 }}>
             S3 Browser
           </Title>
-          {isMobile && (
-            <Button
-              type="text"
-              icon={<MenuOutlined style={{ color: '#fff', fontSize: 20 }} />}
-              onClick={() => setDrawerVisible(true)}
-              style={{ padding: '4px 8px' }}
-            />
-          )}
         </Header>
-        <Layout>
-          {/* Desktop sidebar */}
-          {!isMobile && (
-            <Sider
-              width={350}
-              style={{
-                background: '#fff',
-                padding: 16,
-                overflow: 'auto',
-              }}
-            >
-              {endpointManagerContent}
-            </Sider>
-          )}
-
-          {/* Mobile drawer */}
-          <Drawer
-            title="S3 Endpoints"
-            placement="left"
-            onClose={() => setDrawerVisible(false)}
-            open={drawerVisible}
-            styles={{ body: { padding: 16 } }}
-          >
-            {endpointManagerContent}
-          </Drawer>
-
-          <Content
-            style={{
-              padding: 12,
-              background: '#f0f2f5',
-              overflow: 'auto',
-            }}
-          >
-            {showObjects && selectedBucket ? (
-              <ObjectManager
-                client={s3Client}
-                selectedBucket={selectedBucket}
-                currentPath={currentPath}
-                onPathChange={handlePathChange}
-                onBackToBuckets={handleBackToBuckets}
-              />
-            ) : (
-              <BucketManager
-                client={s3Client}
-                selectedBucket={selectedBucket}
-                onSelectBucket={handleSelectBucket}
-              />
-            )}
-          </Content>
-        </Layout>
+        <Content
+          style={{
+            padding: 12,
+            background: '#f0f2f5',
+            overflow: 'auto',
+          }}
+        >
+          {renderContent()}
+        </Content>
       </Layout>
     </ConfigProvider>
   );
