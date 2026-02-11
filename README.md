@@ -62,6 +62,17 @@ npm run preview
 - MinIO
 - Any S3-compatible storage service
 
+## CORS Configuration
+
+Ensure your S3 endpoint has appropriate CORS settings to allow requests from the browser.
+For example, a permissive CORS configuration would look like this:
+
+```
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: *
+Access-Control-Allow-Headers: *
+```
+
 ## Security
 
 Credentials are stored in the browser's localStorage with base64 encoding. While this provides basic obfuscation, it is not cryptographically secure. Use caution when storing sensitive credentials.
