@@ -7,7 +7,6 @@ import {
   Upload,
   Popconfirm,
   message,
-  Progress,
 } from 'antd';
 import {
   PlusOutlined,
@@ -33,6 +32,7 @@ import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob, copyToClipboard } from '../utils/download';
 import NavigationBar from './NavigationBar';
+import UploadProgress from './UploadProgress';
 
 interface ObjectManagerProps {
   client: S3Client | null;
@@ -277,13 +277,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
           directory=""
           onChange={handleUploadFolder}
         />
-        {uploading && (
-          <Progress
-            percent={uploadProgress}
-            status="active"
-            style={{ marginBottom: 16 }}
-          />
-        )}
+        <UploadProgress uploading={uploading} percent={uploadProgress} />
         <Table
           dataSource={objects}
           columns={columns}
