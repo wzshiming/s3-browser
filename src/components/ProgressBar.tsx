@@ -1,16 +1,16 @@
 import React from 'react';
 import { Progress } from 'antd';
 
-interface UploadProgressProps {
-  uploading: boolean;
+interface ProgressBarProps {
+  enable: boolean;
   percent: number;
 }
 
-const UploadProgress: React.FC<UploadProgressProps> = ({
-  uploading,
+const ProgressBar: React.FC<ProgressBarProps> = ({
+  enable: enable,
   percent,
 }) => {
-  if (!uploading) return null;
+  if (!enable) return null;
 
   return (
     <Progress
@@ -21,4 +21,4 @@ const UploadProgress: React.FC<UploadProgressProps> = ({
   );
 };
 
-export default UploadProgress;
+export default ProgressBar;

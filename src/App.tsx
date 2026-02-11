@@ -5,7 +5,7 @@ import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
 import ObjectManager from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
-import UploadProgress from './components/UploadProgress';
+import ProgressBar from './components/ProgressBar';
 import { createS3Client } from './services/s3Client';
 import { loadEndpoints } from './services/storage';
 import './App.css';
@@ -164,7 +164,7 @@ function App() {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <UploadProgress uploading={uploading} percent={uploadProgress} />
+        <ProgressBar enable={uploading} percent={uploadProgress} />
         {renderContent()}
       </Layout>
     </ConfigProvider>
