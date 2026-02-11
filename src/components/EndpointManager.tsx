@@ -37,17 +37,20 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
 }) => {
 
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
 
   const handleAdd = () => {
     setEditingEndpoint(null);
     form.resetFields();
     form.setFieldsValue({ forcePathStyle: true, region: 'us-east-1' });
+    setModalVisible(true);
   };
 
   const handleEdit = (endpoint: S3Endpoint) => {
     setEditingEndpoint(endpoint);
     form.setFieldsValue(endpoint);
+    setModalVisible(true);
   };
 
   const handleDelete = (name: string) => {
@@ -66,13 +69,20 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
         }
         message.success('Endpoint updated');
       } else {
-
         addEndpoint(values);
         message.success('Endpoint added');
       }
+      setModalVisible(false);
+      form.resetFields();
     } catch {
       // Validation failed
     }
+  };
+
+  const handleCancel = () => {
+    setModalVisible(false);
+    form.resetFields();
+    setEditingEndpoint(null);
   };
 
   const handleSelect = (endpoint: S3Endpoint) => {
@@ -171,7 +181,9 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
 
       <Modal
         title={editingEndpoint ? 'Edit Endpoint' : 'Add Endpoint'}
+        open={modalVisible}
         onOk={handleSubmit}
+        onCancel={handleCancel}
       >
         <Form form={form} layout="vertical">
           <Form.Item
