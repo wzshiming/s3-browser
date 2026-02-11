@@ -21,33 +21,22 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 }) => {
   const items: Array<{ key: string; title: React.ReactNode }> = [];
 
-  // Endpoints level
-  if (!endpointName) {
-    items.push({
-      key: 'endpoints',
-      title: (
-        <span>
-          <CloudServerOutlined style={{ marginRight: 4 }} />
-          Endpoints
-        </span>
-      ),
-    });
-  } else {
-    items.push({
-      key: 'endpoints',
-      title: onNavigateEndpoints ? (
-        <a onClick={onNavigateEndpoints}>
-          <CloudServerOutlined style={{ marginRight: 4 }} />
-          Endpoints
-        </a>
-      ) : (
-        <span>
-          <CloudServerOutlined style={{ marginRight: 4 }} />
-          Endpoints
-        </span>
-      ),
-    });
-  }
+
+  items.push({
+    key: 'endpoints',
+    title: onNavigateEndpoints ? (
+      <a onClick={onNavigateEndpoints}>
+        <CloudServerOutlined style={{ marginRight: 4 }} />
+        Home
+      </a>
+    ) : (
+      <span>
+        <CloudServerOutlined style={{ marginRight: 4 }} />
+        Home
+      </span>
+    ),
+  });
+
 
   // Endpoint name level
   if (endpointName) {
@@ -97,11 +86,18 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
       const isFile = !path.endsWith('/') && index === parts.length - 1;
       const isLast = index === parts.length - 1;
 
-      if (isFile || isLast) {
+      if (isLast) {
         items.push({
           key: pathCopy,
           title: <span>{part}</span>,
         });
+
+        if (!isFile) {
+          items.push({
+            key: "",
+            title: <span></span>,
+          });
+        }
       } else {
         items.push({
           key: pathCopy,
