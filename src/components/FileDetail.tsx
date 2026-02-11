@@ -26,26 +26,19 @@ import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob, copyToClipboard } from '../utils/download';
 import FilePreview from './FilePreview';
-import NavigationBar from './NavigationBar';
 
 interface FileDetailProps {
   client: S3Client | null;
-  endpointName: string;
   bucketName: string;
   filePath: string;
   onPathChange: (path: string) => void;
-  onBackToBuckets: () => void;
-  onBackToEndpoints: () => void;
 }
 
 const FileDetail: React.FC<FileDetailProps> = ({
   client,
-  endpointName,
   bucketName,
   filePath,
   onPathChange,
-  onBackToBuckets,
-  onBackToEndpoints,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
   const [loading, setLoading] = useState(false);
@@ -112,16 +105,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
 
   return (
     <Card
-      title={
-        <NavigationBar
-          endpointName={endpointName}
-          bucketName={bucketName || undefined}
-          path={filePath || undefined}
-          onNavigateEndpoints={onBackToEndpoints}
-          onNavigateBuckets={onBackToBuckets}
-          onNavigatePath={onPathChange}
-        />
-      }
+      title="File Details"
     >
       {loading ? (
         <Spin />

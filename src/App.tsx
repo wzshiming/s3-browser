@@ -6,6 +6,7 @@ import BucketManager from './components/BucketManager';
 import ObjectManager from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
 import ProgressBar from './components/ProgressBar';
+import NavigationBar from './components/NavigationBar';
 import { createS3Client } from './services/s3Client';
 import { loadEndpoints } from './services/storage';
 import './App.css';
@@ -104,7 +105,6 @@ function App() {
       // No endpoint selected: show endpoint management (full page)
       return (
         <EndpointManager
-          selectedEndpoint={selectedEndpoint}
           onSelectEndpoint={handleSelectEndpoint}
         />
       );
@@ -116,8 +116,6 @@ function App() {
         <BucketManager
           client={s3Client}
           onSelectBucket={handleSelectBucket}
-          onBackToEndpoints={handleBackToEndpoints}
-          endpointName={selectedEndpoint}
         />
       );
     }
@@ -131,9 +129,6 @@ function App() {
           bucketName={selectedBucket}
           filePath={currentPath}
           onPathChange={handlePathChange}
-          onBackToBuckets={handleBackToBuckets}
-          onBackToEndpoints={handleBackToEndpoints}
-          endpointName={selectedEndpoint}
         />
       );
     }
@@ -145,9 +140,6 @@ function App() {
         bucketName={selectedBucket}
         currentPath={currentPath}
         onPathChange={handlePathChange}
-        onBackToBuckets={handleBackToBuckets}
-        onBackToEndpoints={handleBackToEndpoints}
-        endpointName={selectedEndpoint}
         setUploading={setUploading}
         setUploadProgress={setUploadProgress}
       />
@@ -165,6 +157,14 @@ function App() {
     >
       <Layout style={{ minHeight: '100vh' }}>
         <ProgressBar enable={uploading} percent={uploadProgress} />
+        <NavigationBar
+          endpointName={selectedEndpoint || undefined}
+          bucketName={selectedBucket || undefined}
+          path={currentPath || undefined}
+          onNavigateEndpoints={selectedEndpoint ? handleBackToEndpoints : undefined}
+          onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
+          onNavigatePath={selectedBucket ? handlePathChange : undefined}
+        />
         {renderContent()}
       </Layout>
     </ConfigProvider>

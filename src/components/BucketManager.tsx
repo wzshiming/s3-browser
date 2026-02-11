@@ -20,20 +20,15 @@ import { S3Client } from '@aws-sdk/client-s3';
 import type { BucketInfo } from '../types';
 import { listBuckets, createBucket, deleteBucket } from '../services/s3Client';
 import { getErrorMessage } from '../utils/error';
-import NavigationBar from './NavigationBar';
 
 interface BucketManagerProps {
   client: S3Client | null;
-  endpointName: string;
   onSelectBucket: (bucket: string) => void;
-  onBackToEndpoints: () => void;
 }
 
 const BucketManager: React.FC<BucketManagerProps> = ({
   client,
-  endpointName,
   onSelectBucket,
-  onBackToEndpoints,
 }) => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -130,12 +125,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
   return (
     <>
       <Card
-        title={
-          <NavigationBar
-            endpointName={endpointName}
-            onNavigateEndpoints={onBackToEndpoints}
-          />
-        }
+        title="Buckets"
         extra={
           <Space>
             <Button

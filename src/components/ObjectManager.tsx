@@ -31,28 +31,21 @@ import {
 import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob, copyToClipboard } from '../utils/download';
-import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
   client: S3Client | null;
-  endpointName: string;
   bucketName: string;
   currentPath: string;
   onPathChange: (path: string) => void;
-  onBackToBuckets: () => void;
-  onBackToEndpoints: () => void;
   setUploading: (uploading: boolean) => void;
   setUploadProgress: (progress: number) => void;
 }
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
   client,
-  endpointName,
   bucketName,
   currentPath,
   onPathChange,
-  onBackToBuckets,
-  onBackToEndpoints,
   setUploading,
   setUploadProgress,
 }) => {
@@ -233,16 +226,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   return (
     <>
       <Card
-        title={
-          <NavigationBar
-            endpointName={endpointName}
-            bucketName={bucketName || undefined}
-            path={currentPath || undefined}
-            onNavigateEndpoints={onBackToEndpoints}
-            onNavigateBuckets={onBackToBuckets}
-            onNavigatePath={onPathChange}
-          />
-        }
+        title="Objects"
         extra={
           <Space wrap>
             <Button icon={<ReloadOutlined />} onClick={fetchObjects}>

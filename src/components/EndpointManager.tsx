@@ -24,15 +24,12 @@ import {
   updateEndpoint,
   deleteEndpoint,
 } from '../services/storage';
-import NavigationBar from './NavigationBar';
 
 interface EndpointManagerProps {
-  selectedEndpoint: string;
   onSelectEndpoint: (endpoint: string) => void;
 }
 
 const EndpointManager: React.FC<EndpointManagerProps> = ({
-  selectedEndpoint,
   onSelectEndpoint,
 }) => {
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
@@ -63,9 +60,6 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       if (editingEndpoint) {
         const updated = { ...editingEndpoint, ...values };
         updateEndpoint(updated);
-        if (selectedEndpoint === updated.name) {
-          onSelectEndpoint(updated.name);
-        }
         message.success('Endpoint updated');
       } else {
         addEndpoint(values);
@@ -144,9 +138,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
   const endpoints = loadEndpoints();
   return (
     <Card
-      title={
-        <NavigationBar />
-      }
+      title="Endpoints"
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
         </Button>
