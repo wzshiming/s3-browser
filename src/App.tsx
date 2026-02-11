@@ -157,18 +157,6 @@ function App() {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <Header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: '#001529',
-            padding: '0 24px',
-          }}
-        >
-          <Title level={3} style={{ color: '#fff', margin: 0 }}>
-            S3 Browser
-          </Title>
-        </Header>
         <Content
           style={{
             padding: 12,

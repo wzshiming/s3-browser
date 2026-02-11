@@ -159,7 +159,12 @@ const BucketManager: React.FC<BucketManagerProps> = ({
           rowKey="name"
           loading={loading}
           size="small"
-          pagination={{ defaultPageSize: 10, showSizeChanger: true }}
+          pagination={
+            {
+              defaultPageSize: 10,
+              showSizeChanger: true,
+            }
+          }
           scroll={{ x: 'max-content' }}
           onRow={(record) => ({
             style: {

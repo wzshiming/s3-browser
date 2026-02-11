@@ -48,8 +48,8 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
     form.setFieldsValue(endpoint);
   };
 
-  const handleDelete = (id: string) => {
-    deleteEndpoint(id);
+  const handleDelete = (name: string) => {
+    deleteEndpoint(name);
     message.success('Endpoint deleted');
   };
 
