@@ -35,6 +35,7 @@ interface ObjectManagerProps {
   currentPath: string;
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
+  onBackToEndpoints: () => void;
   endpointName: string;
 }
 
@@ -51,6 +52,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   currentPath,
   onPathChange,
   onBackToBuckets,
+  onBackToEndpoints,
   endpointName,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
@@ -234,7 +236,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
             endpointName={endpointName}
             bucketName={selectedBucket || undefined}
             path={currentPath || undefined}
-            onNavigateEndpoints={undefined}
+            onNavigateEndpoints={onBackToEndpoints}
             onNavigateBuckets={onBackToBuckets}
             onNavigatePath={onPathChange}
           />

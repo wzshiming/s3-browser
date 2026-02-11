@@ -29,6 +29,7 @@ interface FileDetailProps {
   filePath: string;
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
+  onBackToEndpoints: () => void;
   endpointName: string;
 }
 
@@ -45,6 +46,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
   filePath,
   onPathChange,
   onBackToBuckets,
+  onBackToEndpoints,
   endpointName,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
@@ -113,7 +115,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
           endpointName={endpointName}
           bucketName={selectedBucket || undefined}
           path={filePath || undefined}
-          onNavigateEndpoints={undefined}
+          onNavigateEndpoints={onBackToEndpoints}
           onNavigateBuckets={onBackToBuckets}
           onNavigatePath={onPathChange}
         />
