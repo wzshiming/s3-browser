@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Card,
   Table,
   Button,
   Space,
@@ -39,6 +38,7 @@ interface ObjectManagerProps {
   onPathChange: (path: string) => void;
   setUploading: (uploading: boolean) => void;
   setUploadProgress: (progress: number) => void;
+  setCardExtra: (extra: React.ReactNode) => void;
 }
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
@@ -48,6 +48,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   onPathChange,
   setUploading,
   setUploadProgress,
+  setCardExtra,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,7 +73,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     setSelectedRowKeys([]);
   }, [fetchObjects]);
 
-  const handleUpload = async (file: RcFile): Promise<boolean> => {
+  const handleUpload = useCallback(async (file: RcFile): Promise<boolean> => {
     if (!client || !bucketName) return false;
 
     setUploading(true);
@@ -91,7 +92,49 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     }
 
     return false; // Prevent default upload behavior
-  };
+  }, [client, bucketName, currentPath, fetchObjects, setUploading, setUploadProgress]);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (!client || !bucketName || selectedRowKeys.length === 0) return;
+    try {
+      await deleteObjects(client, bucketName, selectedRowKeys as string[]);
+      message.success(`Deleted ${selectedRowKeys.length} items`);
+      setSelectedRowKeys([]);
+      fetchObjects();
+    } catch (error) {
+      message.error(`Failed to delete: ${getErrorMessage(error)}`);
+    }
+  }, [client, bucketName, selectedRowKeys, fetchObjects]);
+
+  useEffect(() => {
+    setCardExtra(
+      <Space wrap>
+        <Button icon={<ReloadOutlined />} onClick={fetchObjects}>
+        </Button>
+        <Upload
+          beforeUpload={handleUpload}
+          showUploadList={false}
+          multiple
+        >
+          <Button icon={<PlusOutlined />}></Button>
+        </Upload>
+        <Button
+          icon={<FolderAddOutlined />}
+          onClick={() => folderInputRef.current?.click()}
+        >
+        </Button>
+        {selectedRowKeys.length > 0 && (
+          <Popconfirm
+            title={`Delete ${selectedRowKeys.length} items?`}
+            onConfirm={handleBatchDelete}
+          >
+            <Button icon={<DeleteOutlined />} danger></Button>
+          </Popconfirm>
+        )}
+      </Space>
+    );
+    return () => setCardExtra(null);
+  }, [fetchObjects, selectedRowKeys, handleUpload, handleBatchDelete, setCardExtra]);
 
   const handleUploadFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -121,18 +164,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       if (folderInputRef.current) {
         folderInputRef.current.value = '';
       }
-    }
-  };
-
-  const handleBatchDelete = async () => {
-    if (!client || !bucketName || selectedRowKeys.length === 0) return;
-    try {
-      await deleteObjects(client, bucketName, selectedRowKeys as string[]);
-      message.success(`Deleted ${selectedRowKeys.length} items`);
-      setSelectedRowKeys([]);
-      fetchObjects();
-    } catch (error) {
-      message.error(`Failed to delete: ${getErrorMessage(error)}`);
     }
   };
 
@@ -217,80 +248,48 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
 
   if (!client) {
     return (
-      <Card title="Objects">
-        <p>Please select an endpoint first.</p>
-      </Card>
+      <p>Please select an endpoint first.</p>
     );
   }
 
   return (
     <>
-      <Card
-        title="Objects"
-        extra={
-          <Space wrap>
-            <Button icon={<ReloadOutlined />} onClick={fetchObjects}>
-            </Button>
-            <Upload
-              beforeUpload={handleUpload}
-              showUploadList={false}
-              multiple
-            >
-              <Button icon={<PlusOutlined />}></Button>
-            </Upload>
-            <Button
-              icon={<FolderAddOutlined />}
-              onClick={() => folderInputRef.current?.click()}
-            >
-            </Button>
-            {selectedRowKeys.length > 0 && (
-              <Popconfirm
-                title={`Delete ${selectedRowKeys.length} items?`}
-                onConfirm={handleBatchDelete}
-              >
-                <Button icon={<DeleteOutlined />} danger></Button>
-              </Popconfirm>
-            )}
-          </Space>
-        }
-      >
-        <input
-          type="file"
-          ref={folderInputRef}
-          style={{ display: 'none' }}
-          webkitdirectory=""
-          directory=""
-          onChange={handleUploadFolder}
-        />
-        <Table
-          dataSource={objects}
-          columns={columns}
-          rowKey="key"
-          loading={loading}
-          size="small"
-          pagination={
-            {
-              defaultPageSize: 10,
-              showSizeChanger: true,
-            }
+      <input
+        type="file"
+        ref={folderInputRef}
+        style={{ display: 'none' }}
+        webkitdirectory=""
+        directory=""
+        onChange={handleUploadFolder}
+      />
+      <Table
+        dataSource={objects}
+        columns={columns}
+        rowKey="key"
+        loading={loading}
+        size="small"
+        pagination={
+          {
+            defaultPageSize: 10,
+            showSizeChanger: true,
           }
-          scroll={{ x: 'max-content' }}
-          rowSelection={{
-            selectedRowKeys,
-            onChange: setSelectedRowKeys,
-            getCheckboxProps: (record: ObjectInfo) => ({
-              disabled: record.isFolder, // hide/disable checkbox for folders
-            }),
-          }}
-          onRow={(record) => ({
-            onClick: (event) => {
-              const target = event.target as HTMLElement;
-              if (target.closest('button')) return;
-              onPathChange(record.key);
-            },
-          })}
-        />
-      </Card>
+        }
+        scroll={{ x: 'max-content' }}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: setSelectedRowKeys,
+          getCheckboxProps: (record: ObjectInfo) => ({
+            disabled: record.isFolder, // hide/disable checkbox for folders
+          }),
+        }}
+        onRow={(record) => ({
+          onClick: (event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('button')) return;
+            onPathChange(record.key);
+          },
+        })}
+      />
     </>
   );
 };

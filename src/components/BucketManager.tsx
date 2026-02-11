@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Card,
   Table,
   Button,
   Space,
@@ -24,17 +23,18 @@ import { getErrorMessage } from '../utils/error';
 interface BucketManagerProps {
   client: S3Client | null;
   onSelectBucket: (bucket: string) => void;
+  setCardExtra: (extra: React.ReactNode) => void;
 }
 
 const BucketManager: React.FC<BucketManagerProps> = ({
   client,
   onSelectBucket,
+  setCardExtra,
 }) => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [form] = Form.useForm();
-
 
   const fetchBuckets = useCallback(async () => {
     if (!client) return;
@@ -52,6 +52,25 @@ const BucketManager: React.FC<BucketManagerProps> = ({
   useEffect(() => {
     fetchBuckets();
   }, [fetchBuckets]);
+
+  useEffect(() => {
+    setCardExtra(
+      <Space>
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={fetchBuckets}
+        >
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setCreateModalVisible(true)}
+        >
+        </Button>
+      </Space>
+    );
+    return () => setCardExtra(null);
+  }, [fetchBuckets, setCardExtra]);
 
   const handleCreate = async () => {
     try {
@@ -116,54 +135,33 @@ const BucketManager: React.FC<BucketManagerProps> = ({
 
   if (!client) {
     return (
-      <Card title="Buckets">
-        <p>Please select an endpoint first.</p>
-      </Card>
+      <p>Please select an endpoint first.</p>
     );
   }
 
   return (
     <>
-      <Card
-        title="Buckets"
-        extra={
-          <Space>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={fetchBuckets}
-            >
-            </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setCreateModalVisible(true)}
-            >
-            </Button>
-          </Space>
-        }
-      >
-        <Table
-          dataSource={buckets}
-          columns={columns}
-          rowKey="name"
-          loading={loading}
-          size="small"
-          pagination={
-            {
-              defaultPageSize: 10,
-              showSizeChanger: true,
-            }
+      <Table
+        dataSource={buckets}
+        columns={columns}
+        rowKey="name"
+        loading={loading}
+        size="small"
+        pagination={
+          {
+            defaultPageSize: 10,
+            showSizeChanger: true,
           }
-          scroll={{ x: 'max-content' }}
-          onRow={(record) => ({
-            onClick: (event) => {
-              const target = event.target as HTMLElement;
-              if (target.closest('button')) return;
-              onSelectBucket(record.name);
-            },
-          })}
-        />
-      </Card>
+        }
+        scroll={{ x: 'max-content' }}
+        onRow={(record) => ({
+          onClick: (event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('button')) return;
+            onSelectBucket(record.name);
+          },
+        })}
+      />
 
       <Modal
         title="Create Bucket"

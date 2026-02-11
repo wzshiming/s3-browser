@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Card,
   Button,
   Space,
   Descriptions,
@@ -32,6 +31,7 @@ interface FileDetailProps {
   bucketName: string;
   filePath: string;
   onPathChange: (path: string) => void;
+  setCardExtra: (extra: React.ReactNode) => void;
 }
 
 const FileDetail: React.FC<FileDetailProps> = ({
@@ -39,6 +39,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
   bucketName,
   filePath,
   onPathChange,
+  setCardExtra,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,11 @@ const FileDetail: React.FC<FileDetailProps> = ({
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
+
+  useEffect(() => {
+    setCardExtra(null);
+    return () => setCardExtra(null);
+  }, [setCardExtra]);
 
   const handleDownload = async () => {
     if (!client || !bucketName) return;
@@ -97,16 +103,12 @@ const FileDetail: React.FC<FileDetailProps> = ({
 
   if (!client) {
     return (
-      <Card title="File Details">
-        <p>Please select an endpoint first.</p>
-      </Card>
+      <p>Please select an endpoint first.</p>
     );
   }
 
   return (
-    <Card
-      title="File Details"
-    >
+    <>
       {loading ? (
         <Spin />
       ) : properties ? (
@@ -158,7 +160,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
           />
         </>
       ) : null}
-    </Card>
+    </>
   );
 };
 

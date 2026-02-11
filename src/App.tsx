@@ -1,5 +1,5 @@
-import { useState, useMemo, useSyncExternalStore } from 'react';
-import { Layout, ConfigProvider, theme } from 'antd';
+import React, { useState, useMemo, useSyncExternalStore } from 'react';
+import { Layout, Card, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
@@ -53,6 +53,7 @@ function App() {
   const [currentPath, setCurrentPath] = useState<string>(path);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [cardExtra, setCardExtra] = useState<React.ReactNode>(null);
 
   const handleHashChange = () => {
     const { endpointName, bucket, path } = parseHash();
@@ -106,6 +107,7 @@ function App() {
       return (
         <EndpointManager
           onSelectEndpoint={handleSelectEndpoint}
+          setCardExtra={setCardExtra}
         />
       );
     }
@@ -116,6 +118,7 @@ function App() {
         <BucketManager
           client={s3Client}
           onSelectBucket={handleSelectBucket}
+          setCardExtra={setCardExtra}
         />
       );
     }
@@ -129,6 +132,7 @@ function App() {
           bucketName={selectedBucket}
           filePath={currentPath}
           onPathChange={handlePathChange}
+          setCardExtra={setCardExtra}
         />
       );
     }
@@ -142,6 +146,7 @@ function App() {
         onPathChange={handlePathChange}
         setUploading={setUploading}
         setUploadProgress={setUploadProgress}
+        setCardExtra={setCardExtra}
       />
     );
   };
@@ -157,15 +162,21 @@ function App() {
     >
       <Layout style={{ minHeight: '100vh' }}>
         <ProgressBar enable={uploading} percent={uploadProgress} />
-        <NavigationBar
-          endpointName={selectedEndpoint || undefined}
-          bucketName={selectedBucket || undefined}
-          path={currentPath || undefined}
-          onNavigateEndpoints={selectedEndpoint ? handleBackToEndpoints : undefined}
-          onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
-          onNavigatePath={selectedBucket ? handlePathChange : undefined}
-        />
-        {renderContent()}
+        <Card
+          title={
+            <NavigationBar
+              endpointName={selectedEndpoint || undefined}
+              bucketName={selectedBucket || undefined}
+              path={currentPath || undefined}
+              onNavigateEndpoints={selectedEndpoint ? handleBackToEndpoints : undefined}
+              onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
+              onNavigatePath={selectedBucket ? handlePathChange : undefined}
+            />
+          }
+          extra={cardExtra}
+        >
+          {renderContent()}
+        </Card>
       </Layout>
     </ConfigProvider>
   );
