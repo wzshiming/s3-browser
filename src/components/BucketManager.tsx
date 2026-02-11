@@ -199,4 +199,6 @@ const BucketManager = forwardRef<BucketManagerHandle, BucketManagerProps>(({
   );
 });
 
+BucketManager.displayName = 'BucketManager';
+
 export default BucketManager;

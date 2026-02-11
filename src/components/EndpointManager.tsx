@@ -228,4 +228,6 @@ const EndpointManager = forwardRef<EndpointManagerHandle, EndpointManagerProps>(
   );
 });
 
+EndpointManager.displayName = 'EndpointManager';
+
 export default EndpointManager;

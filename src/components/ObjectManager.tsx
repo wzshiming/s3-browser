@@ -316,4 +316,6 @@ const ObjectManager = forwardRef<ObjectManagerHandle, ObjectManagerProps>(({
   );
 });
 
+ObjectManager.displayName = 'ObjectManager';
+
 export default ObjectManager;
