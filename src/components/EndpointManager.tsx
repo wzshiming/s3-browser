@@ -4,8 +4,9 @@ import {
   Form,
   Input,
   Button,
-  List,
+  Table,
   Card,
+  Space,
   Popconfirm,
   Switch,
   message,
@@ -14,6 +15,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  CloudServerOutlined,
 } from '@ant-design/icons';
 import type { S3Endpoint } from '../types';
 import {
@@ -77,6 +79,64 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
     onSelectEndpoint(endpoint.name);
   };
 
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => (
+        <Space>
+          <CloudServerOutlined />
+          <a onClick={() => onSelectEndpoint(name)}>{name}</a>
+        </Space>
+      ),
+    },
+    {
+      title: 'Endpoint URL',
+      dataIndex: 'endpoint',
+      key: 'endpoint',
+      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
+    },
+    {
+      title: 'Region',
+      dataIndex: 'region',
+      key: 'region',
+      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 80,
+      render: (_: unknown, record: S3Endpoint) => (
+        <Space>
+          <Button
+            icon={<EditOutlined />}
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(record);
+            }}
+          />
+          <Popconfirm
+            title="Delete this endpoint?"
+            onConfirm={(e) => {
+              e?.stopPropagation();
+              handleDelete(record.name);
+            }}
+            onCancel={(e) => e?.stopPropagation()}
+          >
+            <Button
+              icon={<DeleteOutlined />}
+              size="small"
+              danger
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
   const endpoints = loadEndpoints();
   return (
     <Card
@@ -87,53 +147,26 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
         </Button>
       }
-      style={{ marginBottom: 16 }}
     >
-      <List
+      <Table
         dataSource={endpoints}
-        renderItem={(endpoint) => (
-          <List.Item
-            style={{
-              cursor: 'pointer',
-              backgroundColor:
-                selectedEndpoint === endpoint.name ? '#e6f7ff' : undefined,
-              padding: '8px 12px',
-              borderRadius: 4,
-            }}
-            onClick={() => handleSelect(endpoint)}
-            actions={[
-              <Button
-                key="edit"
-                icon={<EditOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEdit(endpoint);
-                }}
-              />,
-              <Popconfirm
-                key="delete"
-                title="Delete this endpoint?"
-                onConfirm={(e) => {
-                  e?.stopPropagation();
-                  handleDelete(endpoint.name);
-                }}
-                onCancel={(e) => e?.stopPropagation()}
-              >
-                <Button
-                  icon={<DeleteOutlined />}
-                  danger
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </Popconfirm>,
-            ]}
-          >
-            <List.Item.Meta
-              title={endpoint.name}
-              description={`${endpoint.endpoint} (${endpoint.region})`}
-            />
-          </List.Item>
-        )}
-        locale={{ emptyText: 'No endpoints configured. Click "Add" to add one.' }}
+        columns={columns}
+        rowKey="name"
+        size="small"
+        pagination={
+          {
+            defaultPageSize: 10,
+            showSizeChanger: true,
+          }
+        }
+        scroll={{ x: 'max-content' }}
+        onRow={(record) => ({
+          style: {
+            backgroundColor: selectedEndpoint === record.name ? '#e6f7ff' : undefined,
+            cursor: 'pointer',
+          },
+          onClick: () => handleSelect(record),
+        })}
       />
 
       <Modal
