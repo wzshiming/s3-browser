@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useImperativeHandle, forwardRef } from 'react';
 import {
   Table,
   Button,
@@ -31,6 +31,46 @@ import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob, copyToClipboard } from '../utils/download';
 
+export interface ObjectManagerHandle {
+  reload: () => void;
+  upload: (file: RcFile) => Promise<boolean>;
+  openFolderUpload: () => void;
+  getSelectedCount: () => number;
+  batchDelete: () => void;
+}
+
+export const ObjectManagerToolbar: React.FC<{
+  managerRef: React.RefObject<ObjectManagerHandle | null>;
+  selectedCount: number;
+}> = ({ managerRef, selectedCount }) => {
+  return (
+    <Space wrap>
+      <Button icon={<ReloadOutlined />} onClick={() => managerRef.current?.reload()}>
+      </Button>
+      <Upload
+        beforeUpload={(file) => managerRef.current?.upload(file as RcFile) ?? false}
+        showUploadList={false}
+        multiple
+      >
+        <Button icon={<PlusOutlined />}></Button>
+      </Upload>
+      <Button
+        icon={<FolderAddOutlined />}
+        onClick={() => managerRef.current?.openFolderUpload()}
+      >
+      </Button>
+      {selectedCount > 0 && (
+        <Popconfirm
+          title={`Delete ${selectedCount} items?`}
+          onConfirm={() => managerRef.current?.batchDelete()}
+        >
+          <Button icon={<DeleteOutlined />} danger></Button>
+        </Popconfirm>
+      )}
+    </Space>
+  );
+};
+
 interface ObjectManagerProps {
   client: S3Client | null;
   bucketName: string;
@@ -38,18 +78,18 @@ interface ObjectManagerProps {
   onPathChange: (path: string) => void;
   setUploading: (uploading: boolean) => void;
   setUploadProgress: (progress: number) => void;
-  setExtra: (extra: React.ReactNode) => void;
+  onSelectionChange?: (count: number) => void;
 }
 
-const ObjectManager: React.FC<ObjectManagerProps> = ({
+const ObjectManager = forwardRef<ObjectManagerHandle, ObjectManagerProps>(({
   client,
   bucketName,
   currentPath,
   onPathChange,
   setUploading,
   setUploadProgress,
-  setExtra,
-}) => {
+  onSelectionChange,
+}, ref) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -106,35 +146,17 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     }
   }, [client, bucketName, selectedRowKeys, fetchObjects]);
 
+  useImperativeHandle(ref, () => ({
+    reload: fetchObjects,
+    upload: handleUpload,
+    openFolderUpload: () => folderInputRef.current?.click(),
+    getSelectedCount: () => selectedRowKeys.length,
+    batchDelete: handleBatchDelete,
+  }), [fetchObjects, handleUpload, handleBatchDelete, selectedRowKeys]);
+
   useEffect(() => {
-    setExtra(
-      <Space wrap>
-        <Button icon={<ReloadOutlined />} onClick={fetchObjects}>
-        </Button>
-        <Upload
-          beforeUpload={handleUpload}
-          showUploadList={false}
-          multiple
-        >
-          <Button icon={<PlusOutlined />}></Button>
-        </Upload>
-        <Button
-          icon={<FolderAddOutlined />}
-          onClick={() => folderInputRef.current?.click()}
-        >
-        </Button>
-        {selectedRowKeys.length > 0 && (
-          <Popconfirm
-            title={`Delete ${selectedRowKeys.length} items?`}
-            onConfirm={handleBatchDelete}
-          >
-            <Button icon={<DeleteOutlined />} danger></Button>
-          </Popconfirm>
-        )}
-      </Space>
-    );
-    return () => setExtra(null);
-  }, [fetchObjects, selectedRowKeys, handleUpload, handleBatchDelete, setExtra]);
+    onSelectionChange?.(selectedRowKeys.length);
+  }, [selectedRowKeys, onSelectionChange]);
 
   const handleUploadFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -292,6 +314,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       />
     </>
   );
-};
+});
 
 export default ObjectManager;
