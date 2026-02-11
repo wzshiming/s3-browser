@@ -321,7 +321,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
           rowKey="key"
           loading={loading}
           size="small"
-          pagination={{ pageSize: 50 }}
+          pagination={{ defaultPageSize: 50, showSizeChanger: true }}
           rowSelection={{
             selectedRowKeys,
             onChange: setSelectedRowKeys,
