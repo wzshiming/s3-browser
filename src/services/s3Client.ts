@@ -10,6 +10,7 @@ import {
   HeadObjectCommand,
   DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { FetchHttpHandler } from '@smithy/fetch-http-handler';
 import type { S3Endpoint, BucketInfo, ObjectInfo, ObjectProperties } from '../types';
 
@@ -87,19 +88,13 @@ export const uploadObject = async (
   client: S3Client,
   bucketName: string,
   key: string,
-  body: Blob | File,
-  contentType?: string
+  body: File,
 ): Promise<void> => {
-  // Convert Blob/File to ArrayBuffer to avoid stream issues in some browsers
-  const arrayBuffer = await body.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
-
   await client.send(new PutObjectCommand({
     Bucket: bucketName,
     Key: key,
-    Body: uint8Array,
-    ContentType: contentType || body.type || 'application/octet-stream',
-    ContentLength: uint8Array.length,
+    Body: await body.arrayBuffer(),
+    ContentType: body.type || 'application/octet-stream',
   }));
 };
 
@@ -188,27 +183,15 @@ export const getObjectAsText = async (
   };
 };
 
-export const getObjectAsDataUrl = async (
+export const getPresignedUrl = async (
   client: S3Client,
   bucketName: string,
-  key: string
+  key: string,
+  expiresIn: number = 3600
 ): Promise<string> => {
-  const response = await client.send(new GetObjectCommand({
+  const command = new GetObjectCommand({
     Bucket: bucketName,
     Key: key,
-  }));
-
-  if (!response.Body) {
-    throw new Error('No content received');
-  }
-
-  const bytes = await response.Body.transformToByteArray();
-  const blob = new Blob([bytes], { type: response.ContentType });
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
   });
+  return getSignedUrl(client, command, { expiresIn });
 };

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Layout, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';

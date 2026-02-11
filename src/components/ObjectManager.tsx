@@ -14,6 +14,7 @@ import {
   FolderAddOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  CopyOutlined,
   FolderOutlined,
   FileOutlined,
   ReloadOutlined,
@@ -25,11 +26,12 @@ import {
   listObjects,
   uploadObject,
   deleteObjects,
+  getPresignedUrl,
   downloadObject,
 } from '../services/s3Client';
 import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
-import { downloadBlob } from '../utils/download';
+import { downloadBlob, copyToClipboard } from '../utils/download';
 import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
@@ -88,7 +90,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
 
     try {
       const key = currentPath + file.name;
-      await uploadObject(client, selectedBucket, key, file, file.type);
+      await uploadObject(client, selectedBucket, key, file);
       message.success(`Uploaded ${file.name}`);
       fetchObjects();
     } catch (error) {
@@ -115,7 +117,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
         const relativePath = file.webkitRelativePath || file.name;
         const key = currentPath + relativePath;
 
-        await uploadObject(client, selectedBucket, key, file, file.type);
+        await uploadObject(client, selectedBucket, key, file);
         completed++;
         setUploadProgress(Math.round((completed / total) * 100));
       }
@@ -151,6 +153,17 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       downloadBlob(blob, key.split('/').pop() || 'download');
     } catch (error) {
       message.error(`Failed to download: ${getErrorMessage(error)}`);
+    }
+  };
+
+  const handleCopyLink = async (key: string) => {
+    if (!client || !selectedBucket) return;
+    try {
+      const url = await getPresignedUrl(client, selectedBucket, key);
+      await copyToClipboard(url);
+      message.success('Download link copied to clipboard');
+    } catch (error) {
+      message.error(`Failed to copy link: ${getErrorMessage(error)}`);
     }
   };
 
@@ -191,16 +204,24 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 50,
+      width: 100,
       render: (_: unknown, record: ObjectInfo) =>
         <Space>
           {!record.isFolder && (
-            <Button
-              icon={<DownloadOutlined />}
-              size="small"
-              onClick={() => handleDownload(record.key)}
-              title="Download"
-            />
+            <>
+              <Button
+                icon={<DownloadOutlined />}
+                size="small"
+                onClick={() => handleDownload(record.key)}
+                title="Download"
+              />
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                onClick={() => handleCopyLink(record.key)}
+                title="Copy Link"
+              />
+            </>
           )}
         </Space>
     },
