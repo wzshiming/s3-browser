@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Switch,
   message,
+  theme,
 } from 'antd';
 import {
   PlusOutlined,
@@ -36,6 +37,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
   onSelectEndpoint,
 }) => {
 
+  const { token } = theme.useToken();
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -170,7 +172,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
         scroll={{ x: 'max-content' }}
         onRow={(record) => ({
           style: {
-            backgroundColor: selectedEndpoint === record.name ? '#e6f7ff' : undefined,
+            backgroundColor: selectedEndpoint === record.name ? token.controlItemBgActive : undefined,
             cursor: 'pointer',
           },
           onClick: () => handleSelect(record),

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useSyncExternalStore } from 'react';
 import { Layout, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
@@ -36,7 +36,15 @@ const updateHash = (endpointName: string, bucket: string, path: string) => {
 };
 
 
+const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+const subscribeDarkMode = (callback: () => void) => {
+  darkModeQuery.addEventListener('change', callback);
+  return () => darkModeQuery.removeEventListener('change', callback);
+};
+const getIsDarkMode = () => darkModeQuery.matches;
+
 function App() {
+  const isDarkMode = useSyncExternalStore(subscribeDarkMode, getIsDarkMode);
   const { endpointName, bucket, path } = parseHash();
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>(endpointName);
   const [selectedBucket, setSelectedBucket] = useState<string>(bucket);
@@ -145,7 +153,7 @@ function App() {
   return (
     <ConfigProvider
       theme={{
-        algorithm: theme.defaultAlgorithm,
+        algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
           colorPrimary: '#1890ff',
         },

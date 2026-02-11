@@ -9,6 +9,7 @@ import {
   Input,
   Popconfirm,
   message,
+  theme,
 } from 'antd';
 import {
   PlusOutlined,
@@ -37,6 +38,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
   onBackToEndpoints,
   endpointName,
 }) => {
+  const { token } = theme.useToken();
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -168,7 +170,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
           scroll={{ x: 'max-content' }}
           onRow={(record) => ({
             style: {
-              backgroundColor: selectedBucket === record.name ? '#e6f7ff' : undefined,
+              backgroundColor: selectedBucket === record.name ? token.controlItemBgActive : undefined,
               cursor: 'pointer',
             },
           })}
