@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useSyncExternalStore } from 'react';
-import { Layout, Card, ConfigProvider, theme } from 'antd';
+import { Layout, Flex, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
@@ -162,21 +162,33 @@ function App() {
     >
       <Layout style={{ minHeight: '100vh' }}>
         <ProgressBar enable={uploading} percent={uploadProgress} />
-        <Card
-          title={
-            <NavigationBar
-              endpointName={selectedEndpoint || undefined}
-              bucketName={selectedBucket || undefined}
-              path={currentPath || undefined}
-              onNavigateEndpoints={selectedEndpoint ? handleBackToEndpoints : undefined}
-              onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
-              onNavigatePath={selectedBucket ? handlePathChange : undefined}
-            />
-          }
-          extra={cardExtra}
+        <Layout.Header
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: 'auto',
+            lineHeight: 'normal',
+            padding: '16px 24px',
+          }}
         >
+          <NavigationBar
+            endpointName={selectedEndpoint || undefined}
+            bucketName={selectedBucket || undefined}
+            path={currentPath || undefined}
+            onNavigateEndpoints={selectedEndpoint ? handleBackToEndpoints : undefined}
+            onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
+            onNavigatePath={selectedBucket ? handlePathChange : undefined}
+          />
+          {cardExtra && (
+            <Flex gap="small" align="center" style={{ marginLeft: 16 }}>
+              {cardExtra}
+            </Flex>
+          )}
+        </Layout.Header>
+        <Layout.Content style={{ padding: '16px 24px' }}>
           {renderContent()}
-        </Card>
+        </Layout.Content>
       </Layout>
     </ConfigProvider>
   );

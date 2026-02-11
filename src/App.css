@@ -25,11 +25,6 @@ html, body {
   color: #1890ff;
 }
 
-/* Card styling */
-.ant-card {
-  margin-bottom: 16px;
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
