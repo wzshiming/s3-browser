@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import {
   Table,
   Button,
@@ -20,17 +20,38 @@ import type { BucketInfo } from '../types';
 import { listBuckets, createBucket, deleteBucket } from '../services/s3Client';
 import { getErrorMessage } from '../utils/error';
 
+export interface BucketManagerHandle {
+  reload: () => void;
+  openCreateModal: () => void;
+}
+
+export const BucketManagerToolbar: React.FC<{ managerRef: React.RefObject<BucketManagerHandle | null> }> = ({ managerRef }) => {
+  return (
+    <Space>
+      <Button
+        icon={<ReloadOutlined />}
+        onClick={() => managerRef.current?.reload()}
+      >
+      </Button>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={() => managerRef.current?.openCreateModal()}
+      >
+      </Button>
+    </Space>
+  );
+};
+
 interface BucketManagerProps {
   client: S3Client | null;
   onSelectBucket: (bucket: string) => void;
-  setExtra: (extra: React.ReactNode) => void;
 }
 
-const BucketManager: React.FC<BucketManagerProps> = ({
+const BucketManager = forwardRef<BucketManagerHandle, BucketManagerProps>(({
   client,
   onSelectBucket,
-  setExtra,
-}) => {
+}, ref) => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -53,24 +74,10 @@ const BucketManager: React.FC<BucketManagerProps> = ({
     fetchBuckets();
   }, [fetchBuckets]);
 
-  useEffect(() => {
-    setExtra(
-      <Space>
-        <Button
-          icon={<ReloadOutlined />}
-          onClick={fetchBuckets}
-        >
-        </Button>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setCreateModalVisible(true)}
-        >
-        </Button>
-      </Space>
-    );
-    return () => setExtra(null);
-  }, [fetchBuckets, setExtra]);
+  useImperativeHandle(ref, () => ({
+    reload: fetchBuckets,
+    openCreateModal: () => setCreateModalVisible(true),
+  }), [fetchBuckets]);
 
   const handleCreate = async () => {
     try {
@@ -190,6 +197,8 @@ const BucketManager: React.FC<BucketManagerProps> = ({
       </Modal>
     </>
   );
-};
+});
+
+BucketManager.displayName = 'BucketManager';
 
 export default BucketManager;

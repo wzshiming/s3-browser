@@ -1,9 +1,12 @@
-import React, { useState, useMemo, useSyncExternalStore } from 'react';
+import { useState, useMemo, useRef, useSyncExternalStore } from 'react';
 import { Layout, Flex, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
-import EndpointManager from './components/EndpointManager';
-import BucketManager from './components/BucketManager';
-import ObjectManager from './components/ObjectManager';
+import EndpointManager, { EndpointManagerToolbar } from './components/EndpointManager';
+import type { EndpointManagerHandle } from './components/EndpointManager';
+import BucketManager, { BucketManagerToolbar } from './components/BucketManager';
+import type { BucketManagerHandle } from './components/BucketManager';
+import ObjectManager, { ObjectManagerToolbar } from './components/ObjectManager';
+import type { ObjectManagerHandle } from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
 import ProgressBar from './components/ProgressBar';
 import NavigationBar from './components/NavigationBar';
@@ -53,7 +56,11 @@ function App() {
   const [currentPath, setCurrentPath] = useState<string>(path);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [extra, setExtra] = useState<React.ReactNode>(null);
+  const [objectSelectedCount, setObjectSelectedCount] = useState(0);
+
+  const endpointManagerRef = useRef<EndpointManagerHandle>(null);
+  const bucketManagerRef = useRef<BucketManagerHandle>(null);
+  const objectManagerRef = useRef<ObjectManagerHandle>(null);
 
   const handleHashChange = () => {
     const { endpointName, bucket, path } = parseHash();
@@ -106,8 +113,8 @@ function App() {
       // No endpoint selected: show endpoint management (full page)
       return (
         <EndpointManager
+          ref={endpointManagerRef}
           onSelectEndpoint={handleSelectEndpoint}
-          setExtra={setExtra}
         />
       );
     }
@@ -116,9 +123,9 @@ function App() {
       // Endpoint selected but no bucket: show bucket management (full page)
       return (
         <BucketManager
+          ref={bucketManagerRef}
           client={s3Client}
           onSelectBucket={handleSelectBucket}
-          setExtra={setExtra}
         />
       );
     }
@@ -132,7 +139,6 @@ function App() {
           bucketName={selectedBucket}
           filePath={currentPath}
           onPathChange={handlePathChange}
-          setExtra={setExtra}
         />
       );
     }
@@ -140,13 +146,33 @@ function App() {
     // Bucket selected: show object management (full page)
     return (
       <ObjectManager
+        ref={objectManagerRef}
         client={s3Client}
         bucketName={selectedBucket}
         currentPath={currentPath}
         onPathChange={handlePathChange}
         setUploading={setUploading}
         setUploadProgress={setUploadProgress}
-        setExtra={setExtra}
+        onSelectionChange={setObjectSelectedCount}
+      />
+    );
+  };
+
+  // Determine which toolbar to show
+  const renderExtra = () => {
+    if (!selectedEndpoint) {
+      return <EndpointManagerToolbar managerRef={endpointManagerRef} />;
+    }
+    if (!selectedBucket) {
+      return <BucketManagerToolbar managerRef={bucketManagerRef} />;
+    }
+    if (currentPath && !currentPath.endsWith('/')) {
+      return null;
+    }
+    return (
+      <ObjectManagerToolbar
+        managerRef={objectManagerRef}
+        selectedCount={objectSelectedCount}
       />
     );
   };
@@ -179,11 +205,9 @@ function App() {
             onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
             onNavigatePath={selectedBucket ? handlePathChange : undefined}
           />
-          {extra && (
-            <Flex gap="small" align="center" style={{ marginLeft: 16 }}>
-              {extra}
-            </Flex>
-          )}
+          <Flex gap="small" align="center" style={{ marginLeft: 16 }}>
+            {renderExtra()}
+          </Flex>
         </Layout.Header>
         <Layout.Content style={{ padding: '16px 24px' }}>
           <ProgressBar enable={uploading} percent={uploadProgress} />

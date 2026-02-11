@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import {
   Modal,
   Form,
@@ -24,15 +24,24 @@ import {
   deleteEndpoint,
 } from '../services/storage';
 
-interface EndpointManagerProps {
-  onSelectEndpoint: (endpoint: string) => void;
-  setExtra: (extra: React.ReactNode) => void;
+export interface EndpointManagerHandle {
+  add: () => void;
 }
 
-const EndpointManager: React.FC<EndpointManagerProps> = ({
+export const EndpointManagerToolbar: React.FC<{ managerRef: React.RefObject<EndpointManagerHandle | null> }> = ({ managerRef }) => {
+  return (
+    <Button type="primary" icon={<PlusOutlined />} onClick={() => managerRef.current?.add()}>
+    </Button>
+  );
+};
+
+interface EndpointManagerProps {
+  onSelectEndpoint: (endpoint: string) => void;
+}
+
+const EndpointManager = forwardRef<EndpointManagerHandle, EndpointManagerProps>(({
   onSelectEndpoint,
-  setExtra,
-}) => {
+}, ref) => {
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -44,13 +53,9 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
     setModalVisible(true);
   }, [form]);
 
-  useEffect(() => {
-    setExtra(
-      <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-      </Button>
-    );
-    return () => setExtra(null);
-  }, [handleAdd, setExtra]);
+  useImperativeHandle(ref, () => ({
+    add: handleAdd,
+  }), [handleAdd]);
 
   const handleEdit = (endpoint: S3Endpoint) => {
     setEditingEndpoint(endpoint);
@@ -221,6 +226,8 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       </Modal>
     </>
   );
-};
+});
+
+EndpointManager.displayName = 'EndpointManager';
 
 export default EndpointManager;
