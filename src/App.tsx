@@ -42,6 +42,14 @@ function App() {
   const [selectedBucket, setSelectedBucket] = useState<string>(bucket);
   const [currentPath, setCurrentPath] = useState<string>(path);
 
+  const handleHashChange = () => {
+    const { endpointName, bucket, path } = parseHash();
+    setSelectedEndpoint(endpointName);
+    setSelectedBucket(bucket);
+    setCurrentPath(path);
+  };
+
+  window.addEventListener('hashchange', handleHashChange);
 
   // Create S3 client when endpoint changes using useMemo
   const s3Client = useMemo<S3Client | null>(() => {
@@ -57,36 +65,27 @@ function App() {
   }, [selectedEndpoint]);
 
   const handleSelectBucket = (bucket: string) => {
-    setSelectedBucket(bucket);
-    setCurrentPath('');
     const { endpointName } = parseHash();
     updateHash(endpointName, bucket, '');
   };
 
   const handleBackToBuckets = () => {
-    setSelectedBucket('');
-    setCurrentPath('');
     const { endpointName } = parseHash();
     updateHash(endpointName, '', '');
   };
 
   const handlePathChange = (path: string) => {
-    setCurrentPath(path);
     const { endpointName, bucket } = parseHash();
     updateHash(endpointName, bucket, path);
   };
 
   const handleSelectEndpoint = (endpoint: string) => {
-    setSelectedEndpoint(endpoint);
     updateHash(endpoint, '', '');
   };
 
-  const handleBackToEndpoints = useCallback(() => {
-    setSelectedEndpoint('');
-    setSelectedBucket('');
-    setCurrentPath('');
+  const handleBackToEndpoints = () => {
     updateHash('', '', '');
-  }, []);
+  };
 
   // Determine which layer to show
   const renderContent = () => {
