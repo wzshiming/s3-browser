@@ -139,6 +139,7 @@ function App() {
             filePath={currentPath}
             onPathChange={handlePathChange}
             onBackToBuckets={handleBackToBuckets}
+            endpointName={selectedEndpoint.name}
           />
         );
       }
@@ -151,6 +152,7 @@ function App() {
           currentPath={currentPath}
           onPathChange={handlePathChange}
           onBackToBuckets={handleBackToBuckets}
+          endpointName={selectedEndpoint.name}
         />
       );
     }

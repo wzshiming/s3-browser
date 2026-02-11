@@ -7,14 +7,11 @@ import {
   Spin,
   Popconfirm,
   message,
-  Breadcrumb,
   Divider,
 } from 'antd';
 import {
   DownloadOutlined,
   DeleteOutlined,
-  HomeOutlined,
-  ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { ObjectProperties } from '../types';
@@ -24,6 +21,7 @@ import {
   deleteObjects,
 } from '../services/s3Client';
 import FilePreview from './FilePreview';
+import NavigationBar from './NavigationBar';
 
 interface FileDetailProps {
   client: S3Client | null;
@@ -31,6 +29,7 @@ interface FileDetailProps {
   filePath: string;
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
+  endpointName: string;
 }
 
 const formatSize = (bytes: number): string => {
@@ -46,6 +45,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
   filePath,
   onPathChange,
   onBackToBuckets,
+  endpointName,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
   const [loading, setLoading] = useState(false);
@@ -98,35 +98,6 @@ const FileDetail: React.FC<FileDetailProps> = ({
     }
   };
 
-  const getBreadcrumbItems = () => {
-    const items: Array<{ key: string; title: React.ReactNode }> = [
-      {
-        key: 'bucket',
-        title: <a onClick={() => onPathChange('')}>{selectedBucket}</a>,
-      },
-    ];
-
-    const parts = filePath.split('/').filter(Boolean);
-    let accPath = '';
-    parts.forEach((part, index) => {
-      if (index < parts.length - 1) {
-        accPath += part + '/';
-        const pathCopy = accPath;
-        items.push({
-          key: pathCopy,
-          title: <a onClick={() => onPathChange(pathCopy)}>{part}</a>,
-        });
-      } else {
-        items.push({
-          key: part,
-          title: <span>{part}</span>,
-        });
-      }
-    });
-
-    return items;
-  };
-
   if (!client) {
     return (
       <Card title="File Details">
@@ -138,23 +109,14 @@ const FileDetail: React.FC<FileDetailProps> = ({
   return (
     <Card
       title={
-        <Space wrap>
-          <Button
-            icon={<HomeOutlined />}
-            onClick={onBackToBuckets}
-            type="text"
-          />
-          <Breadcrumb items={getBreadcrumbItems()} />
-        </Space>
-      }
-      extra={
-        <Space wrap>
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => onPathChange(parentPath)}
-          >
-          </Button>
-        </Space>
+        <NavigationBar
+          endpointName={endpointName}
+          bucketName={selectedBucket || undefined}
+          path={filePath || undefined}
+          onNavigateEndpoints={undefined}
+          onNavigateBuckets={onBackToBuckets}
+          onNavigatePath={onPathChange}
+        />
       }
     >
       {loading ? (

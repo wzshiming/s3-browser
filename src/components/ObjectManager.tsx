@@ -4,7 +4,6 @@ import {
   Table,
   Button,
   Space,
-  Breadcrumb,
   Upload,
   Popconfirm,
   message,
@@ -17,7 +16,6 @@ import {
   DownloadOutlined,
   FolderOutlined,
   FileOutlined,
-  HomeOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import type { RcFile } from 'antd/es/upload/interface';
@@ -29,6 +27,7 @@ import {
   deleteObjects,
   downloadObject,
 } from '../services/s3Client';
+import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
   client: S3Client | null;
@@ -36,6 +35,7 @@ interface ObjectManagerProps {
   currentPath: string;
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
+  endpointName: string;
 }
 
 const formatSize = (bytes: number): string => {
@@ -51,6 +51,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   currentPath,
   onPathChange,
   onBackToBuckets,
+  endpointName,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -79,41 +80,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
 
   const handleNavigate = (key: string) => {
     onPathChange(key);
-  };
-
-  const getBreadcrumbItems = () => {
-    const items: Array<{ key: string; title: React.ReactNode }> = [
-      {
-        key: 'bucket',
-        title:
-          currentPath ? (
-            <a onClick={() => onPathChange('')}>{selectedBucket}</a>
-          ) : (
-            <span>{selectedBucket}</span>
-          ),
-      },
-    ];
-
-    if (currentPath) {
-      const parts = currentPath.split('/').filter(Boolean);
-      let accPath = '';
-      parts.forEach((part, index) => {
-        accPath += part + '/';
-        const pathCopy = accPath;
-        items.push({
-          key: pathCopy,
-          title:
-            index === parts.length - 1 ? (
-              <span>{part}</span>
-            ) : (
-              <a onClick={() => onPathChange(pathCopy)}>{part}</a>
-            ),
-        });
-      });
-      items.push({ key: '', title: <span></span> });
-    }
-
-    return items;
   };
 
   const handleUpload = async (file: RcFile): Promise<boolean> => {
@@ -264,14 +230,14 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     <>
       <Card
         title={
-          <Space wrap>
-            <Button
-              icon={<HomeOutlined />}
-              onClick={onBackToBuckets}
-              type="text"
-            />
-            <Breadcrumb items={getBreadcrumbItems()} />
-          </Space>
+          <NavigationBar
+            endpointName={endpointName}
+            bucketName={selectedBucket || undefined}
+            path={currentPath || undefined}
+            onNavigateEndpoints={undefined}
+            onNavigateBuckets={onBackToBuckets}
+            onNavigatePath={onPathChange}
+          />
         }
         extra={
           <Space wrap>
