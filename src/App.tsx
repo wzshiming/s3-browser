@@ -1,17 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Layout, Typography, ConfigProvider, theme } from 'antd';
+import { useState, useCallback, useMemo } from 'react';
+import { Layout, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
 import ObjectManager from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
-import type { S3Endpoint } from './types';
 import { createS3Client } from './services/s3Client';
 import { loadEndpoints } from './services/storage';
 import './App.css';
-
-const { Header, Content } = Layout;
-const { Title } = Typography;
 
 // Parse hash to get current location and endpoint name
 const parseHash = (): { endpointName: string; bucket: string; path: string } => {
@@ -157,15 +153,7 @@ function App() {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <Content
-          style={{
-            padding: 12,
-            background: '#f0f2f5',
-            overflow: 'auto',
-          }}
-        >
-          {renderContent()}
-        </Content>
+        {renderContent()}
       </Layout>
     </ConfigProvider>
   );
