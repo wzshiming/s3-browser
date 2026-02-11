@@ -9,20 +9,39 @@
 }
 
 /* Remove default margins */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
 }
 
+/* Layout adjustments */
+.ant-layout {
+  min-height: 100vh;
+}
+
+/* Header styling */
+.ant-layout-header {
+  display: flex;
+  align-items: center;
+  padding: 32px 24px;
+  background: transparent;
+  justify-content: space-between;
+  height: 32px;
+  line-height: normal
+}
+
 /* Table row hover effect */
-.ant-table-tbody > tr:hover > td {
+.ant-table-tbody>tr:hover>td {
   background: #e6f7ff !important;
 }
 
 /* Breadcrumb styling */
-.ant-breadcrumb a:hover {
-  color: #1890ff;
+.ant-breadcrumb {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: #000;
 }
 
 /* Scrollbar styling */
@@ -45,7 +64,7 @@ html, body {
 }
 
 @media (prefers-color-scheme: dark) {
-  .ant-table-tbody > tr:hover > td {
+  .ant-table-tbody>tr:hover>td {
     background: #111d2c !important;
   }
 
@@ -59,5 +78,9 @@ html, body {
 
   ::-webkit-scrollbar-thumb:hover {
     background: #777;
+  }
+
+  .ant-breadcrumb {
+    color: #fff;
   }
 }

@@ -186,17 +186,8 @@ function App() {
         },
       }}
     >
-      <Layout style={{ minHeight: '100vh' }}>
-        <Layout.Header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '64px',
-            lineHeight: 'normal',
-            padding: '16px 24px',
-          }}
-        >
+      <Layout>
+        <Layout.Header>
           <NavigationBar
             endpointName={selectedEndpoint || undefined}
             bucketName={selectedBucket || undefined}
