@@ -9,12 +9,11 @@ import {
   Input,
   Popconfirm,
   message,
-  theme,
 } from 'antd';
 import {
   PlusOutlined,
   DeleteOutlined,
-  FolderOutlined,
+  InboxOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -25,20 +24,17 @@ import NavigationBar from './NavigationBar';
 
 interface BucketManagerProps {
   client: S3Client | null;
-  selectedBucket: string | null;
+  endpointName: string;
   onSelectBucket: (bucket: string) => void;
   onBackToEndpoints: () => void;
-  endpointName: string;
 }
 
 const BucketManager: React.FC<BucketManagerProps> = ({
   client,
-  selectedBucket,
+  endpointName,
   onSelectBucket,
   onBackToEndpoints,
-  endpointName,
 }) => {
-  const { token } = theme.useToken();
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -90,13 +86,14 @@ const BucketManager: React.FC<BucketManagerProps> = ({
 
   const columns = [
     {
-      title: 'Bucket Name',
+      title: 'Name',
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => (
         <Space>
-          <FolderOutlined />
-          <a onClick={() => onSelectBucket(name)}>{name}</a>
+          <InboxOutlined />
+          {name}
+          {'/'}
         </Space>
       ),
     },
@@ -124,8 +121,8 @@ const BucketManager: React.FC<BucketManagerProps> = ({
 
   if (!client) {
     return (
-      <Card title={`${endpointName} - Buckets`}>
-        <p>Connecting to endpoint...</p>
+      <Card title="Buckets">
+        <p>Please select an endpoint first.</p>
       </Card>
     );
   }
@@ -169,9 +166,10 @@ const BucketManager: React.FC<BucketManagerProps> = ({
           }
           scroll={{ x: 'max-content' }}
           onRow={(record) => ({
-            style: {
-              backgroundColor: selectedBucket === record.name ? token.controlItemBgActive : undefined,
-              cursor: 'pointer',
+            onClick: (event) => {
+              const target = event.target as HTMLElement;
+              if (target.closest('button')) return;
+              onSelectBucket(record.name);
             },
           })}
         />

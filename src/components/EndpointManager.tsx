@@ -10,7 +10,6 @@ import {
   Popconfirm,
   Switch,
   message,
-  theme,
 } from 'antd';
 import {
   PlusOutlined,
@@ -36,8 +35,6 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
   selectedEndpoint,
   onSelectEndpoint,
 }) => {
-
-  const { token } = theme.useToken();
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -87,10 +84,6 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
     setEditingEndpoint(null);
   };
 
-  const handleSelect = (endpoint: S3Endpoint) => {
-    onSelectEndpoint(endpoint.name);
-  };
-
   const columns = [
     {
       title: 'Name',
@@ -99,7 +92,8 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       render: (name: string) => (
         <Space>
           <CloudServerOutlined />
-          <a onClick={() => onSelectEndpoint(name)}>{name}</a>
+          {name}
+          {'/'}
         </Space>
       ),
     },
@@ -171,11 +165,11 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
         }
         scroll={{ x: 'max-content' }}
         onRow={(record) => ({
-          style: {
-            backgroundColor: selectedEndpoint === record.name ? token.controlItemBgActive : undefined,
-            cursor: 'pointer',
-          },
-          onClick: () => handleSelect(record),
+          onClick: (event) => {
+              const target = event.target as HTMLElement;
+              if (target.closest('button')) return;
+              onSelectEndpoint(record.name);
+            },
         })}
       />
 

@@ -36,22 +36,22 @@ import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
   client: S3Client | null;
-  selectedBucket: string | null;
+  endpointName: string;
+  bucketName: string;
   currentPath: string;
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
   onBackToEndpoints: () => void;
-  endpointName: string;
 }
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
   client,
-  selectedBucket,
+  endpointName,
+  bucketName,
   currentPath,
   onPathChange,
   onBackToBuckets,
   onBackToEndpoints,
-  endpointName,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,36 +61,32 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   const folderInputRef = useRef<HTMLInputElement>(null);
 
   const fetchObjects = useCallback(async () => {
-    if (!client || !selectedBucket) return;
+    if (!client || !bucketName) return;
     setLoading(true);
     try {
-      const result = await listObjects(client, selectedBucket, currentPath);
+      const result = await listObjects(client, bucketName, currentPath);
       setObjects(result.objects);
     } catch (error) {
       message.error(`Failed to list objects: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
-  }, [client, selectedBucket, currentPath]);
+  }, [client, bucketName, currentPath]);
 
   useEffect(() => {
     fetchObjects();
     setSelectedRowKeys([]);
   }, [fetchObjects]);
 
-  const handleNavigate = (key: string) => {
-    onPathChange(key);
-  };
-
   const handleUpload = async (file: RcFile): Promise<boolean> => {
-    if (!client || !selectedBucket) return false;
+    if (!client || !bucketName) return false;
 
     setUploading(true);
     setUploadProgress(0);
 
     try {
       const key = currentPath + file.name;
-      await uploadObject(client, selectedBucket, key, file);
+      await uploadObject(client, bucketName, key, file);
       message.success(`Uploaded ${file.name}`);
       fetchObjects();
     } catch (error) {
@@ -105,7 +101,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
 
   const handleUploadFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || !client || !selectedBucket) return;
+    if (!files || !client || !bucketName) return;
 
     setUploading(true);
     const total = files.length;
@@ -117,7 +113,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
         const relativePath = file.webkitRelativePath || file.name;
         const key = currentPath + relativePath;
 
-        await uploadObject(client, selectedBucket, key, file);
+        await uploadObject(client, bucketName, key, file);
         completed++;
         setUploadProgress(Math.round((completed / total) * 100));
       }
@@ -135,9 +131,9 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   };
 
   const handleBatchDelete = async () => {
-    if (!client || !selectedBucket || selectedRowKeys.length === 0) return;
+    if (!client || !bucketName || selectedRowKeys.length === 0) return;
     try {
-      await deleteObjects(client, selectedBucket, selectedRowKeys as string[]);
+      await deleteObjects(client, bucketName, selectedRowKeys as string[]);
       message.success(`Deleted ${selectedRowKeys.length} items`);
       setSelectedRowKeys([]);
       fetchObjects();
@@ -147,9 +143,9 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   };
 
   const handleDownload = async (key: string) => {
-    if (!client || !selectedBucket) return;
+    if (!client || !bucketName) return;
     try {
-      const blob = await downloadObject(client, selectedBucket, key);
+      const blob = await downloadObject(client, bucketName, key);
       downloadBlob(blob, key.split('/').pop() || 'download');
     } catch (error) {
       message.error(`Failed to download: ${getErrorMessage(error)}`);
@@ -157,9 +153,9 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   };
 
   const handleCopyLink = async (key: string) => {
-    if (!client || !selectedBucket) return;
+    if (!client || !bucketName) return;
     try {
-      const url = await getPresignedUrl(client, selectedBucket, key);
+      const url = await getPresignedUrl(client, bucketName, key);
       await copyToClipboard(url);
       message.success('Download link copied to clipboard');
     } catch (error) {
@@ -177,10 +173,8 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
         return (
           <Space>
             {record.isFolder ? <FolderOutlined /> : <FileOutlined />}
-            <a onClick={() => handleNavigate(key)}>
-              {name}
-              {record.isFolder ? '/' : ''}
-            </a>
+            {name}
+            {record.isFolder ? '/' : ''}
           </Space>
         );
       },
@@ -230,7 +224,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   if (!client) {
     return (
       <Card title="Objects">
-        <p>Please select a bucket first.</p>
+        <p>Please select an endpoint first.</p>
       </Card>
     );
   }
@@ -241,7 +235,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
         title={
           <NavigationBar
             endpointName={endpointName}
-            bucketName={selectedBucket || undefined}
+            bucketName={bucketName || undefined}
             path={currentPath || undefined}
             onNavigateEndpoints={onBackToEndpoints}
             onNavigateBuckets={onBackToBuckets}
@@ -310,6 +304,13 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
               disabled: record.isFolder, // hide/disable checkbox for folders
             }),
           }}
+          onRow={(record) => ({
+            onClick: (event) => {
+              const target = event.target as HTMLElement;
+              if (target.closest('button')) return;
+              onPathChange(record.key);
+            },
+          })}
         />
       </Card>
     </>

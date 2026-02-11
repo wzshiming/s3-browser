@@ -30,22 +30,22 @@ import NavigationBar from './NavigationBar';
 
 interface FileDetailProps {
   client: S3Client | null;
-  selectedBucket: string | null;
+  endpointName: string;
+  bucketName: string;
   filePath: string;
   onPathChange: (path: string) => void;
   onBackToBuckets: () => void;
   onBackToEndpoints: () => void;
-  endpointName: string;
 }
 
 const FileDetail: React.FC<FileDetailProps> = ({
   client,
-  selectedBucket,
+  endpointName,
+  bucketName,
   filePath,
   onPathChange,
   onBackToBuckets,
   onBackToEndpoints,
-  endpointName,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,26 +54,26 @@ const FileDetail: React.FC<FileDetailProps> = ({
   const parentPath = filePath.substring(0, filePath.lastIndexOf('/') + 1);
 
   const fetchProperties = useCallback(async () => {
-    if (!client || !selectedBucket || !filePath) return;
+    if (!client || !bucketName || !filePath) return;
     setLoading(true);
     try {
-      const props = await getObjectProperties(client, selectedBucket, filePath);
+      const props = await getObjectProperties(client, bucketName, filePath);
       setProperties(props);
     } catch (error) {
       message.error(`Failed to get properties: ${getErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
-  }, [client, selectedBucket, filePath]);
+  }, [client, bucketName, filePath]);
 
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
 
   const handleDownload = async () => {
-    if (!client || !selectedBucket) return;
+    if (!client || !bucketName) return;
     try {
-      const blob = await downloadObject(client, selectedBucket, filePath);
+      const blob = await downloadObject(client, bucketName, filePath);
       downloadBlob(blob, fileName);
     } catch (error) {
       message.error(`Failed to download: ${getErrorMessage(error)}`);
@@ -81,9 +81,9 @@ const FileDetail: React.FC<FileDetailProps> = ({
   };
 
   const handleCopyLink = async () => {
-    if (!client || !selectedBucket) return;
+    if (!client || !bucketName) return;
     try {
-      const url = await getPresignedUrl(client, selectedBucket, filePath);
+      const url = await getPresignedUrl(client, bucketName, filePath);
       await copyToClipboard(url);
       message.success('Download link copied to clipboard');
     } catch (error) {
@@ -92,9 +92,9 @@ const FileDetail: React.FC<FileDetailProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!client || !selectedBucket) return;
+    if (!client || !bucketName) return;
     try {
-      await deleteObjects(client, selectedBucket, [filePath]);
+      await deleteObjects(client, bucketName, [filePath]);
       message.success(`Deleted ${fileName}`);
       onPathChange(parentPath);
     } catch (error) {
@@ -105,7 +105,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
   if (!client) {
     return (
       <Card title="File Details">
-        <p>Please select a bucket first.</p>
+        <p>Please select an endpoint first.</p>
       </Card>
     );
   }
@@ -115,7 +115,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
       title={
         <NavigationBar
           endpointName={endpointName}
-          bucketName={selectedBucket || undefined}
+          bucketName={bucketName || undefined}
           path={filePath || undefined}
           onNavigateEndpoints={onBackToEndpoints}
           onNavigateBuckets={onBackToBuckets}
@@ -169,7 +169,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
 
           <FilePreview
             client={client}
-            bucket={selectedBucket}
+            bucket={bucketName}
             objectKey={filePath}
           />
         </>

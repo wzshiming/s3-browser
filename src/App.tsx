@@ -112,7 +112,6 @@ function App() {
       return (
         <BucketManager
           client={s3Client}
-          selectedBucket={selectedBucket}
           onSelectBucket={handleSelectBucket}
           onBackToEndpoints={handleBackToEndpoints}
           endpointName={selectedEndpoint}
@@ -126,7 +125,7 @@ function App() {
       return (
         <FileDetail
           client={s3Client}
-          selectedBucket={selectedBucket}
+          bucketName={selectedBucket}
           filePath={currentPath}
           onPathChange={handlePathChange}
           onBackToBuckets={handleBackToBuckets}
@@ -140,7 +139,7 @@ function App() {
     return (
       <ObjectManager
         client={s3Client}
-        selectedBucket={selectedBucket}
+        bucketName={selectedBucket}
         currentPath={currentPath}
         onPathChange={handlePathChange}
         onBackToBuckets={handleBackToBuckets}

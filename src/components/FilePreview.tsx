@@ -7,7 +7,7 @@ const { Text, Paragraph } = Typography;
 
 interface FilePreviewProps {
   client: S3Client | null;
-  bucket: string | null;
+  bucket: string;
   objectKey: string;
 }
 
