@@ -6,5 +6,5 @@ export const downloadBlob = (blob: Blob, fileName: string): void => {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 100);
+  URL.revokeObjectURL(url);
 };

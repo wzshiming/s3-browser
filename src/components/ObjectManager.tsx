@@ -30,7 +30,6 @@ import {
 import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob } from '../utils/download';
-import type { Breakpoint } from '../utils/types';
 import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
@@ -178,25 +177,22 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       dataIndex: 'size',
       key: 'size',
       width: 100,
-      responsive: ['md'] as Breakpoint[],
       render: (size: number, record: ObjectInfo) =>
-        record.isFolder ? '' : formatSize(size),
+        record.isFolder ? '-' : formatSize(size),
     },
     {
       title: 'Last Modified',
       dataIndex: 'lastModified',
       key: 'lastModified',
       width: 180,
-      responsive: ['lg'] as Breakpoint[],
       render: (date: Date, record: ObjectInfo) =>
-        record.isFolder ? '' : date ? new Date(date).toLocaleString() : '-',
+        record.isFolder ? '-' : date ? new Date(date).toLocaleString() : '-',
     },
     {
       title: 'Actions',
       key: 'actions',
       width: 50,
       render: (_: unknown, record: ObjectInfo) =>
-
         <Space>
           {!record.isFolder && (
             <Button

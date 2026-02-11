@@ -20,7 +20,6 @@ import { S3Client } from '@aws-sdk/client-s3';
 import type { BucketInfo } from '../types';
 import { listBuckets, createBucket, deleteBucket } from '../services/s3Client';
 import { getErrorMessage } from '../utils/error';
-import type { Breakpoint } from '../utils/types';
 import NavigationBar from './NavigationBar';
 
 interface BucketManagerProps {
@@ -103,7 +102,6 @@ const BucketManager: React.FC<BucketManagerProps> = ({
       title: 'Creation Date',
       dataIndex: 'creationDate',
       key: 'creationDate',
-      responsive: ['md'] as Breakpoint[],
       render: (date: Date) => date?.toLocaleString() || '-',
     },
     {
