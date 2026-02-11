@@ -203,14 +203,14 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       dataIndex: 'key',
       key: 'key',
       render: (key: string, record: ObjectInfo) => {
-        const name = (() => {
-          const trimmed = key.endsWith('/') ? key.slice(0, -1) : key;
-          return trimmed.substring(trimmed.lastIndexOf('/') + 1);
-        })();
+        const name = key.split('/').filter(Boolean).pop() || key;
         return (
           <Space>
             {record.isFolder ? <FolderOutlined /> : <FileOutlined />}
-            <a onClick={() => handleNavigate(key)}>{name}</a>
+            <a onClick={() => handleNavigate(key)}>
+              {name}
+              {record.isFolder ? '/' : ''}
+            </a>
           </Space>
         );
       },
