@@ -8,13 +8,10 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
-  HeadBucketCommand,
-  GetBucketVersioningCommand,
-  GetBucketLocationCommand,
   DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
 import { FetchHttpHandler } from '@smithy/fetch-http-handler';
-import type { S3Endpoint, BucketInfo, ObjectInfo, ObjectProperties, BucketProperties } from '../types';
+import type { S3Endpoint, BucketInfo, ObjectInfo, ObjectProperties } from '../types';
 
 export const createS3Client = (endpoint: S3Endpoint): S3Client => {
   return new S3Client({
@@ -44,34 +41,6 @@ export const createBucket = async (client: S3Client, bucketName: string): Promis
 
 export const deleteBucket = async (client: S3Client, bucketName: string): Promise<void> => {
   await client.send(new DeleteBucketCommand({ Bucket: bucketName }));
-};
-
-export const getBucketProperties = async (client: S3Client, bucketName: string): Promise<BucketProperties> => {
-  // Check if bucket exists
-  await client.send(new HeadBucketCommand({ Bucket: bucketName }));
-
-  let region: string | undefined;
-  let versioning: string | undefined;
-
-  try {
-    const locationResponse = await client.send(new GetBucketLocationCommand({ Bucket: bucketName }));
-    region = locationResponse.LocationConstraint || 'us-east-1';
-  } catch {
-    // Ignore location errors
-  }
-
-  try {
-    const versioningResponse = await client.send(new GetBucketVersioningCommand({ Bucket: bucketName }));
-    versioning = versioningResponse.Status || 'Not enabled';
-  } catch {
-    // Ignore versioning errors
-  }
-
-  return {
-    name: bucketName,
-    region,
-    versioning,
-  };
 };
 
 export const listObjects = async (

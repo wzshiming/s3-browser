@@ -110,7 +110,6 @@ const BucketManager: React.FC<BucketManagerProps> = ({
         <Space>
           <Popconfirm
             title="Delete this bucket?"
-            description="Bucket must be empty to be deleted."
             onConfirm={() => handleDelete(record.name)}
           >
             <Button icon={<DeleteOutlined />} size="small" danger />
@@ -160,7 +159,6 @@ const BucketManager: React.FC<BucketManagerProps> = ({
               backgroundColor: selectedBucket === record.name ? '#e6f7ff' : undefined,
               cursor: 'pointer',
             },
-            onClick: () => onSelectBucket(record.name),
           })}
         />
       </Card>

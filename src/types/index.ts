@@ -31,14 +31,6 @@ export interface ObjectProperties {
   contentType?: string;
 }
 
-// Bucket properties
-export interface BucketProperties {
-  name: string;
-  creationDate?: Date;
-  region?: string;
-  versioning?: string;
-}
-
 // Extend React's input element attributes to include webkitdirectory
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
