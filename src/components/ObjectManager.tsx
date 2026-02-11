@@ -38,7 +38,7 @@ interface ObjectManagerProps {
   onPathChange: (path: string) => void;
   setUploading: (uploading: boolean) => void;
   setUploadProgress: (progress: number) => void;
-  setCardExtra: (extra: React.ReactNode) => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
@@ -48,7 +48,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   onPathChange,
   setUploading,
   setUploadProgress,
-  setCardExtra,
+  setExtra,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -107,7 +107,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
   }, [client, bucketName, selectedRowKeys, fetchObjects]);
 
   useEffect(() => {
-    setCardExtra(
+    setExtra(
       <Space wrap>
         <Button icon={<ReloadOutlined />} onClick={fetchObjects}>
         </Button>
@@ -133,8 +133,8 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
         )}
       </Space>
     );
-    return () => setCardExtra(null);
-  }, [fetchObjects, selectedRowKeys, handleUpload, handleBatchDelete, setCardExtra]);
+    return () => setExtra(null);
+  }, [fetchObjects, selectedRowKeys, handleUpload, handleBatchDelete, setExtra]);
 
   const handleUploadFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;

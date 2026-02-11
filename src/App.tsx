@@ -53,7 +53,7 @@ function App() {
   const [currentPath, setCurrentPath] = useState<string>(path);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [cardExtra, setCardExtra] = useState<React.ReactNode>(null);
+  const [extra, setExtra] = useState<React.ReactNode>(null);
 
   const handleHashChange = () => {
     const { endpointName, bucket, path } = parseHash();
@@ -107,7 +107,7 @@ function App() {
       return (
         <EndpointManager
           onSelectEndpoint={handleSelectEndpoint}
-          setCardExtra={setCardExtra}
+          setExtra={setExtra}
         />
       );
     }
@@ -118,7 +118,7 @@ function App() {
         <BucketManager
           client={s3Client}
           onSelectBucket={handleSelectBucket}
-          setCardExtra={setCardExtra}
+          setExtra={setExtra}
         />
       );
     }
@@ -132,7 +132,7 @@ function App() {
           bucketName={selectedBucket}
           filePath={currentPath}
           onPathChange={handlePathChange}
-          setCardExtra={setCardExtra}
+          setExtra={setExtra}
         />
       );
     }
@@ -146,7 +146,7 @@ function App() {
         onPathChange={handlePathChange}
         setUploading={setUploading}
         setUploadProgress={setUploadProgress}
-        setCardExtra={setCardExtra}
+        setExtra={setExtra}
       />
     );
   };
@@ -161,13 +161,12 @@ function App() {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <ProgressBar enable={uploading} percent={uploadProgress} />
         <Layout.Header
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: 'auto',
+            height: '64px',
             lineHeight: 'normal',
             padding: '16px 24px',
           }}
@@ -180,13 +179,14 @@ function App() {
             onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
             onNavigatePath={selectedBucket ? handlePathChange : undefined}
           />
-          {cardExtra && (
+          {extra && (
             <Flex gap="small" align="center" style={{ marginLeft: 16 }}>
-              {cardExtra}
+              {extra}
             </Flex>
           )}
         </Layout.Header>
         <Layout.Content style={{ padding: '16px 24px' }}>
+          <ProgressBar enable={uploading} percent={uploadProgress} />
           {renderContent()}
         </Layout.Content>
       </Layout>

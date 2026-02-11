@@ -31,7 +31,7 @@ interface FileDetailProps {
   bucketName: string;
   filePath: string;
   onPathChange: (path: string) => void;
-  setCardExtra: (extra: React.ReactNode) => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const FileDetail: React.FC<FileDetailProps> = ({
@@ -39,7 +39,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
   bucketName,
   filePath,
   onPathChange,
-  setCardExtra,
+  setExtra,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
   const [loading, setLoading] = useState(false);
@@ -65,9 +65,9 @@ const FileDetail: React.FC<FileDetailProps> = ({
   }, [fetchProperties]);
 
   useEffect(() => {
-    setCardExtra(null);
-    return () => setCardExtra(null);
-  }, [setCardExtra]);
+    setExtra(null);
+    return () => setExtra(null);
+  }, [setExtra]);
 
   const handleDownload = async () => {
     if (!client || !bucketName) return;

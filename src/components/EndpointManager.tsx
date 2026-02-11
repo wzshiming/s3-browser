@@ -26,12 +26,12 @@ import {
 
 interface EndpointManagerProps {
   onSelectEndpoint: (endpoint: string) => void;
-  setCardExtra: (extra: React.ReactNode) => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const EndpointManager: React.FC<EndpointManagerProps> = ({
   onSelectEndpoint,
-  setCardExtra,
+  setExtra,
 }) => {
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -45,12 +45,12 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
   }, [form]);
 
   useEffect(() => {
-    setCardExtra(
+    setExtra(
       <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
       </Button>
     );
-    return () => setCardExtra(null);
-  }, [handleAdd, setCardExtra]);
+    return () => setExtra(null);
+  }, [handleAdd, setExtra]);
 
   const handleEdit = (endpoint: S3Endpoint) => {
     setEditingEndpoint(endpoint);

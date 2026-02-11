@@ -23,13 +23,13 @@ import { getErrorMessage } from '../utils/error';
 interface BucketManagerProps {
   client: S3Client | null;
   onSelectBucket: (bucket: string) => void;
-  setCardExtra: (extra: React.ReactNode) => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const BucketManager: React.FC<BucketManagerProps> = ({
   client,
   onSelectBucket,
-  setCardExtra,
+  setExtra,
 }) => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ const BucketManager: React.FC<BucketManagerProps> = ({
   }, [fetchBuckets]);
 
   useEffect(() => {
-    setCardExtra(
+    setExtra(
       <Space>
         <Button
           icon={<ReloadOutlined />}
@@ -69,8 +69,8 @@ const BucketManager: React.FC<BucketManagerProps> = ({
         </Button>
       </Space>
     );
-    return () => setCardExtra(null);
-  }, [fetchBuckets, setCardExtra]);
+    return () => setExtra(null);
+  }, [fetchBuckets, setExtra]);
 
   const handleCreate = async () => {
     try {
