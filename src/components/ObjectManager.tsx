@@ -102,7 +102,12 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     const items: Array<{ key: string; title: React.ReactNode }> = [
       {
         key: 'bucket',
-        title: <a onClick={() => onPathChange('')}>{selectedBucket}</a>,
+        title:
+          currentPath ? (
+            <a onClick={() => onPathChange('')}>{selectedBucket}</a>
+          ) : (
+            <span>{selectedBucket}</span>
+          ),
       },
     ];
 
@@ -122,6 +127,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
             ),
         });
       });
+      items.push({ key: '', title: <span></span> });
     }
 
     return items;
