@@ -15,6 +15,7 @@ import {
   DeleteOutlined,
   FolderOutlined,
   ReloadOutlined,
+  CloudServerOutlined,
 } from '@ant-design/icons';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { BucketInfo } from '../types';
@@ -24,12 +25,16 @@ interface BucketManagerProps {
   client: S3Client | null;
   selectedBucket: string | null;
   onSelectBucket: (bucket: string | null) => void;
+  onBackToEndpoints: () => void;
+  endpointName: string;
 }
 
 const BucketManager: React.FC<BucketManagerProps> = ({
   client,
   selectedBucket,
   onSelectBucket,
+  onBackToEndpoints,
+  endpointName,
 }) => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,8 +125,8 @@ const BucketManager: React.FC<BucketManagerProps> = ({
 
   if (!client) {
     return (
-      <Card title="Buckets">
-        <p>Please select an S3 endpoint first.</p>
+      <Card title={`${endpointName} - Buckets`}>
+        <p>Connecting to endpoint...</p>
       </Card>
     );
   }
@@ -129,7 +134,16 @@ const BucketManager: React.FC<BucketManagerProps> = ({
   return (
     <>
       <Card
-        title="Buckets"
+        title={
+          <Space>
+            <Button
+              icon={<CloudServerOutlined />}
+              onClick={onBackToEndpoints}
+              type="text"
+            />
+            {endpointName} - Buckets
+          </Space>
+        }
         extra={
           <Space>
             <Button
