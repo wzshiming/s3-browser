@@ -18,8 +18,7 @@ const parseHash = (): { bucket: string | null; path: string } => {
   const hash = window.location.hash.slice(1); // Remove #
   if (!hash) return { bucket: null, path: '' };
 
-  const decoded = decodeURIComponent(hash);
-  const parts = decoded.split('/');
+  const parts = hash.split('/');
   const bucket = parts[0] || null;
   const path = parts.slice(1).join('/');
 
@@ -31,9 +30,9 @@ const updateHash = (bucket: string | null, path: string) => {
   if (!bucket) {
     window.location.hash = '';
   } else if (path) {
-    window.location.hash = encodeURIComponent(bucket) + '/' + encodeURIComponent(path);
+    window.location.hash = bucket + '/' + path;
   } else {
-    window.location.hash = encodeURIComponent(bucket);
+    window.location.hash = bucket;
   }
 };
 
