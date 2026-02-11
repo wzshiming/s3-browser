@@ -1,11 +1,12 @@
-import { useState, useMemo, useSyncExternalStore } from 'react';
-import { Layout, ConfigProvider, theme } from 'antd';
+import React, { useState, useMemo, useSyncExternalStore } from 'react';
+import { Layout, Flex, ConfigProvider, theme } from 'antd';
 import { S3Client } from '@aws-sdk/client-s3';
 import EndpointManager from './components/EndpointManager';
 import BucketManager from './components/BucketManager';
 import ObjectManager from './components/ObjectManager';
 import FileDetail from './components/FileDetail';
 import ProgressBar from './components/ProgressBar';
+import NavigationBar from './components/NavigationBar';
 import { createS3Client } from './services/s3Client';
 import { loadEndpoints } from './services/storage';
 import './App.css';
@@ -52,6 +53,7 @@ function App() {
   const [currentPath, setCurrentPath] = useState<string>(path);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [extra, setExtra] = useState<React.ReactNode>(null);
 
   const handleHashChange = () => {
     const { endpointName, bucket, path } = parseHash();
@@ -104,8 +106,8 @@ function App() {
       // No endpoint selected: show endpoint management (full page)
       return (
         <EndpointManager
-          selectedEndpoint={selectedEndpoint}
           onSelectEndpoint={handleSelectEndpoint}
+          setExtra={setExtra}
         />
       );
     }
@@ -116,8 +118,7 @@ function App() {
         <BucketManager
           client={s3Client}
           onSelectBucket={handleSelectBucket}
-          onBackToEndpoints={handleBackToEndpoints}
-          endpointName={selectedEndpoint}
+          setExtra={setExtra}
         />
       );
     }
@@ -131,9 +132,7 @@ function App() {
           bucketName={selectedBucket}
           filePath={currentPath}
           onPathChange={handlePathChange}
-          onBackToBuckets={handleBackToBuckets}
-          onBackToEndpoints={handleBackToEndpoints}
-          endpointName={selectedEndpoint}
+          setExtra={setExtra}
         />
       );
     }
@@ -145,11 +144,9 @@ function App() {
         bucketName={selectedBucket}
         currentPath={currentPath}
         onPathChange={handlePathChange}
-        onBackToBuckets={handleBackToBuckets}
-        onBackToEndpoints={handleBackToEndpoints}
-        endpointName={selectedEndpoint}
         setUploading={setUploading}
         setUploadProgress={setUploadProgress}
+        setExtra={setExtra}
       />
     );
   };
@@ -164,8 +161,34 @@ function App() {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <ProgressBar enable={uploading} percent={uploadProgress} />
-        {renderContent()}
+        <Layout.Header
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '64px',
+            lineHeight: 'normal',
+            padding: '16px 24px',
+          }}
+        >
+          <NavigationBar
+            endpointName={selectedEndpoint || undefined}
+            bucketName={selectedBucket || undefined}
+            path={currentPath || undefined}
+            onNavigateEndpoints={selectedEndpoint ? handleBackToEndpoints : undefined}
+            onNavigateBuckets={selectedBucket ? handleBackToBuckets : undefined}
+            onNavigatePath={selectedBucket ? handlePathChange : undefined}
+          />
+          {extra && (
+            <Flex gap="small" align="center" style={{ marginLeft: 16 }}>
+              {extra}
+            </Flex>
+          )}
+        </Layout.Header>
+        <Layout.Content style={{ padding: '16px 24px' }}>
+          <ProgressBar enable={uploading} percent={uploadProgress} />
+          {renderContent()}
+        </Layout.Content>
       </Layout>
     </ConfigProvider>
   );

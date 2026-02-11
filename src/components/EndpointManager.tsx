@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   Form,
   Input,
   Button,
   Table,
-  Card,
   Space,
   Popconfirm,
   Switch,
@@ -24,27 +23,34 @@ import {
   updateEndpoint,
   deleteEndpoint,
 } from '../services/storage';
-import NavigationBar from './NavigationBar';
 
 interface EndpointManagerProps {
-  selectedEndpoint: string;
   onSelectEndpoint: (endpoint: string) => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const EndpointManager: React.FC<EndpointManagerProps> = ({
-  selectedEndpoint,
   onSelectEndpoint,
+  setExtra,
 }) => {
   const [editingEndpoint, setEditingEndpoint] = useState<S3Endpoint | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingEndpoint(null);
     form.resetFields();
     form.setFieldsValue({ forcePathStyle: true, region: 'us-east-1' });
     setModalVisible(true);
-  };
+  }, [form]);
+
+  useEffect(() => {
+    setExtra(
+      <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+      </Button>
+    );
+    return () => setExtra(null);
+  }, [handleAdd, setExtra]);
 
   const handleEdit = (endpoint: S3Endpoint) => {
     setEditingEndpoint(endpoint);
@@ -63,9 +69,6 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
       if (editingEndpoint) {
         const updated = { ...editingEndpoint, ...values };
         updateEndpoint(updated);
-        if (selectedEndpoint === updated.name) {
-          onSelectEndpoint(updated.name);
-        }
         message.success('Endpoint updated');
       } else {
         addEndpoint(values);
@@ -143,15 +146,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
 
   const endpoints = loadEndpoints();
   return (
-    <Card
-      title={
-        <NavigationBar />
-      }
-      extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-        </Button>
-      }
-    >
+    <>
       <Table
         dataSource={endpoints}
         columns={columns}
@@ -224,7 +219,7 @@ const EndpointManager: React.FC<EndpointManagerProps> = ({
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </>
   );
 };
 

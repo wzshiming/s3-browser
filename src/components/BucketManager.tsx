@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Card,
   Table,
   Button,
   Space,
@@ -20,26 +19,22 @@ import { S3Client } from '@aws-sdk/client-s3';
 import type { BucketInfo } from '../types';
 import { listBuckets, createBucket, deleteBucket } from '../services/s3Client';
 import { getErrorMessage } from '../utils/error';
-import NavigationBar from './NavigationBar';
 
 interface BucketManagerProps {
   client: S3Client | null;
-  endpointName: string;
   onSelectBucket: (bucket: string) => void;
-  onBackToEndpoints: () => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const BucketManager: React.FC<BucketManagerProps> = ({
   client,
-  endpointName,
   onSelectBucket,
-  onBackToEndpoints,
+  setExtra,
 }) => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [form] = Form.useForm();
-
 
   const fetchBuckets = useCallback(async () => {
     if (!client) return;
@@ -57,6 +52,25 @@ const BucketManager: React.FC<BucketManagerProps> = ({
   useEffect(() => {
     fetchBuckets();
   }, [fetchBuckets]);
+
+  useEffect(() => {
+    setExtra(
+      <Space>
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={fetchBuckets}
+        >
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setCreateModalVisible(true)}
+        >
+        </Button>
+      </Space>
+    );
+    return () => setExtra(null);
+  }, [fetchBuckets, setExtra]);
 
   const handleCreate = async () => {
     try {
@@ -121,59 +135,33 @@ const BucketManager: React.FC<BucketManagerProps> = ({
 
   if (!client) {
     return (
-      <Card title="Buckets">
-        <p>Please select an endpoint first.</p>
-      </Card>
+      <p>Please select an endpoint first.</p>
     );
   }
 
   return (
     <>
-      <Card
-        title={
-          <NavigationBar
-            endpointName={endpointName}
-            onNavigateEndpoints={onBackToEndpoints}
-          />
-        }
-        extra={
-          <Space>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={fetchBuckets}
-            >
-            </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setCreateModalVisible(true)}
-            >
-            </Button>
-          </Space>
-        }
-      >
-        <Table
-          dataSource={buckets}
-          columns={columns}
-          rowKey="name"
-          loading={loading}
-          size="small"
-          pagination={
-            {
-              defaultPageSize: 10,
-              showSizeChanger: true,
-            }
+      <Table
+        dataSource={buckets}
+        columns={columns}
+        rowKey="name"
+        loading={loading}
+        size="small"
+        pagination={
+          {
+            defaultPageSize: 10,
+            showSizeChanger: true,
           }
-          scroll={{ x: 'max-content' }}
-          onRow={(record) => ({
-            onClick: (event) => {
-              const target = event.target as HTMLElement;
-              if (target.closest('button')) return;
-              onSelectBucket(record.name);
-            },
-          })}
-        />
-      </Card>
+        }
+        scroll={{ x: 'max-content' }}
+        onRow={(record) => ({
+          onClick: (event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('button')) return;
+            onSelectBucket(record.name);
+          },
+        })}
+      />
 
       <Modal
         title="Create Bucket"

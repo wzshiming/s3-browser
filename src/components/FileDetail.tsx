@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Card,
   Button,
   Space,
   Descriptions,
@@ -26,26 +25,21 @@ import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob, copyToClipboard } from '../utils/download';
 import FilePreview from './FilePreview';
-import NavigationBar from './NavigationBar';
 
 interface FileDetailProps {
   client: S3Client | null;
-  endpointName: string;
   bucketName: string;
   filePath: string;
   onPathChange: (path: string) => void;
-  onBackToBuckets: () => void;
-  onBackToEndpoints: () => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const FileDetail: React.FC<FileDetailProps> = ({
   client,
-  endpointName,
   bucketName,
   filePath,
   onPathChange,
-  onBackToBuckets,
-  onBackToEndpoints,
+  setExtra,
 }) => {
   const [properties, setProperties] = useState<ObjectProperties | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,6 +63,11 @@ const FileDetail: React.FC<FileDetailProps> = ({
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
+
+  useEffect(() => {
+    setExtra(null);
+    return () => setExtra(null);
+  }, [setExtra]);
 
   const handleDownload = async () => {
     if (!client || !bucketName) return;
@@ -104,25 +103,12 @@ const FileDetail: React.FC<FileDetailProps> = ({
 
   if (!client) {
     return (
-      <Card title="File Details">
-        <p>Please select an endpoint first.</p>
-      </Card>
+      <p>Please select an endpoint first.</p>
     );
   }
 
   return (
-    <Card
-      title={
-        <NavigationBar
-          endpointName={endpointName}
-          bucketName={bucketName || undefined}
-          path={filePath || undefined}
-          onNavigateEndpoints={onBackToEndpoints}
-          onNavigateBuckets={onBackToBuckets}
-          onNavigatePath={onPathChange}
-        />
-      }
-    >
+    <>
       {loading ? (
         <Spin />
       ) : properties ? (
@@ -174,7 +160,7 @@ const FileDetail: React.FC<FileDetailProps> = ({
           />
         </>
       ) : null}
-    </Card>
+    </>
   );
 };
 

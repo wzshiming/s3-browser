@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Card,
   Table,
   Button,
   Space,
@@ -31,30 +30,25 @@ import {
 import { formatSize } from '../utils/format';
 import { getErrorMessage } from '../utils/error';
 import { downloadBlob, copyToClipboard } from '../utils/download';
-import NavigationBar from './NavigationBar';
 
 interface ObjectManagerProps {
   client: S3Client | null;
-  endpointName: string;
   bucketName: string;
   currentPath: string;
   onPathChange: (path: string) => void;
-  onBackToBuckets: () => void;
-  onBackToEndpoints: () => void;
   setUploading: (uploading: boolean) => void;
   setUploadProgress: (progress: number) => void;
+  setExtra: (extra: React.ReactNode) => void;
 }
 
 const ObjectManager: React.FC<ObjectManagerProps> = ({
   client,
-  endpointName,
   bucketName,
   currentPath,
   onPathChange,
-  onBackToBuckets,
-  onBackToEndpoints,
   setUploading,
   setUploadProgress,
+  setExtra,
 }) => {
   const [objects, setObjects] = useState<ObjectInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -79,7 +73,7 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     setSelectedRowKeys([]);
   }, [fetchObjects]);
 
-  const handleUpload = async (file: RcFile): Promise<boolean> => {
+  const handleUpload = useCallback(async (file: RcFile): Promise<boolean> => {
     if (!client || !bucketName) return false;
 
     setUploading(true);
@@ -98,7 +92,49 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
     }
 
     return false; // Prevent default upload behavior
-  };
+  }, [client, bucketName, currentPath, fetchObjects, setUploading, setUploadProgress]);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (!client || !bucketName || selectedRowKeys.length === 0) return;
+    try {
+      await deleteObjects(client, bucketName, selectedRowKeys as string[]);
+      message.success(`Deleted ${selectedRowKeys.length} items`);
+      setSelectedRowKeys([]);
+      fetchObjects();
+    } catch (error) {
+      message.error(`Failed to delete: ${getErrorMessage(error)}`);
+    }
+  }, [client, bucketName, selectedRowKeys, fetchObjects]);
+
+  useEffect(() => {
+    setExtra(
+      <Space wrap>
+        <Button icon={<ReloadOutlined />} onClick={fetchObjects}>
+        </Button>
+        <Upload
+          beforeUpload={handleUpload}
+          showUploadList={false}
+          multiple
+        >
+          <Button icon={<PlusOutlined />}></Button>
+        </Upload>
+        <Button
+          icon={<FolderAddOutlined />}
+          onClick={() => folderInputRef.current?.click()}
+        >
+        </Button>
+        {selectedRowKeys.length > 0 && (
+          <Popconfirm
+            title={`Delete ${selectedRowKeys.length} items?`}
+            onConfirm={handleBatchDelete}
+          >
+            <Button icon={<DeleteOutlined />} danger></Button>
+          </Popconfirm>
+        )}
+      </Space>
+    );
+    return () => setExtra(null);
+  }, [fetchObjects, selectedRowKeys, handleUpload, handleBatchDelete, setExtra]);
 
   const handleUploadFolder = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -128,18 +164,6 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
       if (folderInputRef.current) {
         folderInputRef.current.value = '';
       }
-    }
-  };
-
-  const handleBatchDelete = async () => {
-    if (!client || !bucketName || selectedRowKeys.length === 0) return;
-    try {
-      await deleteObjects(client, bucketName, selectedRowKeys as string[]);
-      message.success(`Deleted ${selectedRowKeys.length} items`);
-      setSelectedRowKeys([]);
-      fetchObjects();
-    } catch (error) {
-      message.error(`Failed to delete: ${getErrorMessage(error)}`);
     }
   };
 
@@ -224,89 +248,48 @@ const ObjectManager: React.FC<ObjectManagerProps> = ({
 
   if (!client) {
     return (
-      <Card title="Objects">
-        <p>Please select an endpoint first.</p>
-      </Card>
+      <p>Please select an endpoint first.</p>
     );
   }
 
   return (
     <>
-      <Card
-        title={
-          <NavigationBar
-            endpointName={endpointName}
-            bucketName={bucketName || undefined}
-            path={currentPath || undefined}
-            onNavigateEndpoints={onBackToEndpoints}
-            onNavigateBuckets={onBackToBuckets}
-            onNavigatePath={onPathChange}
-          />
-        }
-        extra={
-          <Space wrap>
-            <Button icon={<ReloadOutlined />} onClick={fetchObjects}>
-            </Button>
-            <Upload
-              beforeUpload={handleUpload}
-              showUploadList={false}
-              multiple
-            >
-              <Button icon={<PlusOutlined />}></Button>
-            </Upload>
-            <Button
-              icon={<FolderAddOutlined />}
-              onClick={() => folderInputRef.current?.click()}
-            >
-            </Button>
-            {selectedRowKeys.length > 0 && (
-              <Popconfirm
-                title={`Delete ${selectedRowKeys.length} items?`}
-                onConfirm={handleBatchDelete}
-              >
-                <Button icon={<DeleteOutlined />} danger></Button>
-              </Popconfirm>
-            )}
-          </Space>
-        }
-      >
-        <input
-          type="file"
-          ref={folderInputRef}
-          style={{ display: 'none' }}
-          webkitdirectory=""
-          directory=""
-          onChange={handleUploadFolder}
-        />
-        <Table
-          dataSource={objects}
-          columns={columns}
-          rowKey="key"
-          loading={loading}
-          size="small"
-          pagination={
-            {
-              defaultPageSize: 10,
-              showSizeChanger: true,
-            }
+      <input
+        type="file"
+        ref={folderInputRef}
+        style={{ display: 'none' }}
+        webkitdirectory=""
+        directory=""
+        onChange={handleUploadFolder}
+      />
+      <Table
+        dataSource={objects}
+        columns={columns}
+        rowKey="key"
+        loading={loading}
+        size="small"
+        pagination={
+          {
+            defaultPageSize: 10,
+            showSizeChanger: true,
           }
-          scroll={{ x: 'max-content' }}
-          rowSelection={{
-            selectedRowKeys,
-            onChange: setSelectedRowKeys,
-            getCheckboxProps: (record: ObjectInfo) => ({
-              disabled: record.isFolder, // hide/disable checkbox for folders
-            }),
-          }}
-          onRow={(record) => ({
-            onClick: (event) => {
-              const target = event.target as HTMLElement;
-              if (target.closest('button')) return;
-              onPathChange(record.key);
-            },
-          })}
-        />
-      </Card>
+        }
+        scroll={{ x: 'max-content' }}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: setSelectedRowKeys,
+          getCheckboxProps: (record: ObjectInfo) => ({
+            disabled: record.isFolder, // hide/disable checkbox for folders
+          }),
+        }}
+        onRow={(record) => ({
+          onClick: (event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('button')) return;
+            onPathChange(record.key);
+          },
+        })}
+      />
     </>
   );
 };
